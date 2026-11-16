@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon_badge, avatar, post_button %}
+{% block title %}{{ entry.activity.name }}{% endblock %}
+{% block content %}
+{% if entry.is_deleted %}
+  <div class="alert alert-warning d-flex align-items-center gap-2 flex-wrap">
+    <i class="bi bi-trash"></i> Questa registrazione è nel cestino (eliminata il {{ entry.deleted_at|localdt }}).
+    {% if can_edit %}
+      <span class="ms-auto d-flex gap-2">
+        {{ post_button(url_for('entries.restore', entry_id=entry.id), 'Ripristina', icon='arrow-counterclockwise', btn_class='btn-sm btn-success') }}
+        {% if current_membership.is_admin %}
+          {{ post_button(url_for('entries.purge', entry_id=entry.id), 'Elimina definitivamente', icon='x-octagon', btn_class='btn-sm btn-outline-danger', confirm='Eliminare definitivamente? L\'operazione non è reversibile.') }}
+        {% endif %}
+      </span>
+    {% endif %}
+  </div>
+{% endif %}
+<div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+  {{ icon_badge(entry.activity.display_icon, entry.activity.display_color, 56) }}
+  <div class="flex-fill min-w-0">
+    <h1 class="h3 mb-0">{{ entry.activity.name }} <span class="text-body-secondary fs-5">+{{ entry.quantity|num }} {{ entry.activity.count_label }}</span></h1>
+    <div class="text-body-secondary">{{ entry.occurred_at|weekday }} {{ entry.occurred_at|localdt('%d/%m/%Y alle %H:%M') }}</div>
+  </div>
+  {% if can_edit and not entry.is_deleted %}
+    <div class="d-flex gap-2">
+      <a class="btn btn-primary" href="{{ url_for('entries.edit', entry_id=entry.id) }}"><i class="bi bi-pencil"></i> Modifica</a>
+      {{ post_button(url_for('entries.delete', entry_id=entry.id), 'Elimina', icon='trash', btn_class='btn-outline-danger', confirm='Spostare la registrazione nel cestino?') }}
+    </div>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-lg-7">
+    <div class="card lt-card mb-3">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex align-items-center gap-2"><span class="text-body-secondary flex-fill">Svolta da</span>{{ avatar(entry.performed_by, 24) }} <strong>{{ entry.performed_by.display_name }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Inserita da</span><strong>{{ entry.created_by.display_name if entry.created_by else '—' }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Categoria</span><strong>{{ entry.activity.category.full_name }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Ambito</span><strong>{{ scope_labels[entry.scope] }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Visibilità</span><strong>{{ 'Tutta la famiglia' if entry.visibility == 'family' else 'Privata' }}</strong></li>
+        {% for metric, value in values %}
+          <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">{{ metric.name }}</span><strong>{{ value }}</strong></li>
+        {% endfor %}
+        {% if entry.participants %}
+          <li class="list-group-item"><span class="text-body-secondary">Partecipanti</span>
+            <div class="d-flex flex-wrap gap-2 mt-1">{% for p in entry.participants %}<span class="d-inline-flex align-items-center gap-1">{{ avatar(p, 22) }} {{ p.display_name }}</span>{% endfor %}</div></li>
+        {% endif %}
+        {% if entry.tags %}
+          <li class="list-group-item">{% for t in entry.tags %}<span class="lt-tag me-1" style="--lt-color: {{ t.color }}">#{{ t.name }}</span>{% endfor %}</li>
+        {% endif %}
+      </ul>
+    </div>
+    {% if entry.description or entry.notes %}
+      <div class="card lt-card mb-3"><div class="card-body">
+        {% if entry.description %}<p class="fw-semibold mb-2">{{ entry.description }}</p>{% endif %}
+        {% if entry.notes %}<p class="mb-0 lt-prewrap">{{ entry.notes }}</p>{% endif %}
+      </div></div>
+    {% endif %}
+    {% if entry.attachments %}
+      <div class="card lt-card mb-3">
+        <div class="card-header fw-semibold">Foto e allegati</div>
+        <div class="card-body lt-attachments">
+          {% for a in entry.attachments %}
+            <div class="lt-attachment">
+              {% if a.is_image %}
+                <a href="{{ url_for('entries.attachment', attachment_id=a.id) }}" target="_blank" rel="noopener"><img src="{{ url_for('entries.attachment', attachment_id=a.id) }}" alt="{{ a.original_filename }}" loading="lazy"></a>
+              {% else %}
+                <a class="lt-attachment-file" href="{{ url_for('entries.attachment', attachment_id=a.id, scarica=1) }}"><i class="bi bi-file-earmark-pdf fs-2"></i><span class="small text-truncate">{{ a.original_filename }}</span></a>
+              {% endif %}
+              {% if can_edit and not entry.is_deleted %}
+                {{ post_button(url_for('entries.delete_attachment', attachment_id=a.id), None, icon='x-lg', btn_class='btn-sm btn-danger lt-attachment-del', confirm='Eliminare questo allegato?', title='Elimina allegato') }}
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  <div class="col-12 col-lg-5">
+    <div class="card lt-card">
+      <div class="card-header fw-semibold"><i class="bi bi-clock-history"></i> Storico modifiche</div>
+      <ul class="list-group list-group-flush small">
+        {% for item in history %}
+          {% set rev = item.revision %}
+          <li class="list-group-item">
+            <div class="d-flex"><strong class="flex-fill">{{ {'create': 'Creata', 'update': 'Modificata', 'delete': 'Eliminata', 'restore': 'Ripristinata'}[rev.action] }}</strong>
+              <span class="text-body-secondary">{{ rev.changed_at|localdt }}</span></div>
+            <div class="text-body-secondary">da {{ rev.changed_by.display_name if rev.changed_by else '—' }}</div>
+            {% for key, old, new in item.changes %}
+              <div class="mt-1"><span class="fw-semibold">{{ key }}</span>: <span class="text-decoration-line-through text-body-secondary">{{ old or '—' }}</span> → {{ new or '—' }}</div>
+            {% endfor %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field, page_header, icon_badge %}
+{% block title %}{{ 'Modifica registrazione' if entry else 'Nuova registrazione' }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-4">
+  {{ icon_badge(activity.display_icon, activity.display_color, 52) }}
+  <div><h1 class="h3 mb-0">{{ self.title() }}</h1><div class="text-body-secondary">{{ activity.category.full_name }} › {{ activity.name }}</div></div>
+</div>
+<form method="post" enctype="multipart/form-data" novalidate>
+  {{ form.hidden_tag() }}
+  <div class="row g-3">
+    <div class="col-12 col-lg-7">
+      <div class="card lt-card">
+        <div class="card-header fw-semibold">Attività</div>
+        <div class="card-body">
+          <div class="mb-3">
+            {{ form.activity_id.label(class_='form-label') }}
+            {{ form.activity_id(class_='form-select', **{'data-reload-activity': url_for('entries.edit', entry_id=entry.id) if entry else url_for('entries.new')}) }}
+          </div>
+          <div class="row">
+            {{ field(form.performed_by_profile_id, class_='col-sm-6') }}
+            <div class="col-sm-6 mb-3">
+              {{ form.quantity.label(class_='form-label') }}
+              <div class="input-group">
+                {{ form.quantity(class_='form-control' ~ (' is-invalid' if form.quantity.errors else '')) }}
+                <span class="input-group-text">{{ activity.count_label }}</span>
+                {% for e in form.quantity.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            {{ field(form.occurred_date, class_='col-7') }}
+            {{ field(form.occurred_time, class_='col-5') }}
+          </div>
+          {% if form.metric_field_names %}
+            <h2 class="h6 mt-2 mb-3 text-body-secondary">Indicatori</h2>
+            <div class="row">
+              {% for name, metric in form.metric_field_names %}
+                {% set f = form[name] %}
+                {% if metric.data_type == 'boolean' %}
+                  <div class="col-sm-6">{{ field(f) }}</div>
+                {% else %}
+                  {{ field(f, class_='col-sm-6', help=('Obbligatorio' if metric.is_required else None)) }}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="small text-body-secondary mb-0">Questa attività non ha indicatori: conta solo la quantità.</p>
+          {% endif %}
+          {{ field(form.description) }}
+          {{ field(form.notes) }}
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-5">
+      <div class="card lt-card mb-3">
+        <div class="card-header fw-semibold">Contesto</div>
+        <div class="card-body">
+          <div class="row">
+            {{ field(form.scope, class_='col-6') }}
+            {{ field(form.visibility, class_='col-6') }}
+          </div>
+          {% if form.participant_ids.choices %}
+          <fieldset class="mb-3">
+            <legend class="form-label fs-6">Partecipanti</legend>
+            <div class="d-flex flex-wrap gap-2">
+              {% for value, label in form.participant_ids.choices %}
+                <input type="checkbox" class="btn-check" name="participant_ids" id="part{{ value }}" value="{{ value }}" autocomplete="off" {{ 'checked' if form.participant_ids.data and value in form.participant_ids.data }}>
+                <label class="btn btn-sm btn-outline-secondary rounded-pill" for="part{{ value }}">{{ label }}</label>
+              {% endfor %}
+            </div>
+            {% for e in form.participant_ids.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </fieldset>
+          {% endif %}
+          {% if form.tag_ids.choices %}
+          <fieldset class="mb-3">
+            <legend class="form-label fs-6">Tag</legend>
+            <div class="d-flex flex-wrap gap-2">
+              {% for value, label in form.tag_ids.choices %}
+                <input type="checkbox" class="btn-check" name="tag_ids" id="tag{{ value }}" value="{{ value }}" autocomplete="off" {{ 'checked' if form.tag_ids.data and value in form.tag_ids.data }}>
+                <label class="btn btn-sm btn-outline-secondary rounded-pill" for="tag{{ value }}">#{{ label }}</label>
+              {% endfor %}
+            </div>
+          </fieldset>
+          {% endif %}
+          {{ field(form.new_tags) }}
+        </div>
+      </div>
+      <div class="card lt-card">
+        <div class="card-header fw-semibold">Foto e allegati</div>
+        <div class="card-body">
+          {% if entry and entry.attachments %}<p class="small">Allegati già presenti: {{ entry.attachments|length }} (gestiscili dalla scheda della registrazione).</p>{% endif %}
+          {{ form.attachments(class_='form-control' ~ (' is-invalid' if form.attachments.errors else ''), multiple=True, accept='image/*,application/pdf') }}
+          {% for e in form.attachments.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          <div class="form-text">Immagini o PDF, max {{ max_mb }} MB in totale. Le foto vengono ridimensionate e private dei dati di posizione.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="lt-form-actions mt-3">
+    <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-check-lg"></i> Salva</button>
+    <a class="btn btn-link" href="{{ url_for('entries.detail', entry_id=entry.id) if entry else url_for('entries.quick') }}">Annulla</a>
+  </div>
+</form>
+{% endblock %}

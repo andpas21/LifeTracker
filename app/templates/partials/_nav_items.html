@@ -1,6 +1,8 @@
 {# Voci del menu principale. Ogni fase aggiunge qui le proprie voci, solo quando sono funzionanti. #}
 {% set ep = request.endpoint or '' %}
 <a class="nav-link {{ 'active' if ep == 'main.home' }}" href="{{ url_for('main.home') }}"><i class="bi bi-house"></i> Home</a>
+<a class="nav-link lt-nav-cta {{ 'active' if ep in ('entries.quick', 'entries.new') }}" href="{{ url_for('entries.quick') }}"><i class="bi bi-plus-circle-fill"></i> Registra</a>
+<a class="nav-link {{ 'active' if ep in ('entries.index', 'entries.detail', 'entries.edit') }}" href="{{ url_for('entries.index') }}"><i class="bi bi-journal-text"></i> Registrazioni</a>
 <div class="lt-nav-section">Configurazione</div>
 <a class="nav-link {{ 'active' if ep.startswith('catalog.') }}" href="{{ url_for('catalog.index') }}"><i class="bi bi-grid"></i> Catalogo</a>
 <div class="lt-nav-section">Famiglia</div>

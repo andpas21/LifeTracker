@@ -95,21 +95,34 @@ def shares_family(user: User, profile_id: int) -> bool:
         return False
     if user.profile.id == profile_id:
         return True
+    from app.models import ActivityEntry
+
     mine = db.select(FamilyMember.family_id).where(FamilyMember.profile_id == user.profile.id)
-    return (
-        db.session.scalar(
-            db.select(db.func.count())
-            .select_from(FamilyMember)
-            .where(FamilyMember.profile_id == profile_id, FamilyMember.family_id.in_(mine))
-        )
-        > 0
+    member = db.session.scalar(
+        db.select(db.func.count()).select_from(FamilyMember)
+        .where(FamilyMember.profile_id == profile_id, FamilyMember.family_id.in_(mine))
     )
+    if member:
+        return True
+    # ex componenti (es. dipendenti rimossi) che compaiono ancora nello storico della famiglia
+    return bool(db.session.scalar(
+        db.select(db.func.count()).select_from(ActivityEntry)
+        .where(ActivityEntry.performed_by_profile_id == profile_id, ActivityEntry.family_id.in_(mine))
+    ))
 
 
 def admin_count(family: Family) -> int:
     return db.session.scalar(
         db.select(db.func.count()).select_from(FamilyMember).filter_by(family_id=family.id, role=ROLE_ADMIN)
     )
+
+
+def _has_entries(profile_id: int) -> bool:
+    from app.models import ActivityEntry
+
+    return bool(db.session.scalar(
+        db.select(db.func.count()).select_from(ActivityEntry).filter_by(performed_by_profile_id=profile_id)
+    ))
 
 
 def _require_admin(actor: FamilyMember) -> None:
@@ -166,6 +179,11 @@ def delete_family(actor: FamilyMember, confirm_name: str) -> None:
         for m in family.memberships
         if m.role == ROLE_DEPENDENT and len(m.profile.memberships) <= 1
     ]
+    from app.models import Attachment
+
+    attachment_files = list(db.session.scalars(
+        db.select(Attachment.stored_filename).filter_by(family_id=family.id)
+    ))
     log_action("family.deleted", details={"family_id": family.id, "name": family.name})
     db.session.execute(
         db.update(User).where(User.current_family_id == family.id).values(current_family_id=None)
@@ -177,6 +195,8 @@ def delete_family(actor: FamilyMember, confirm_name: str) -> None:
     db.session.commit()
     for _, avatar_filename in dependents:
         delete_upload("avatars", avatar_filename)
+    for name in attachment_files:
+        delete_upload("attachments", name)
 
 
 def leave_family(actor: FamilyMember) -> None:
@@ -229,12 +249,16 @@ def remove_member(actor: FamilyMember, member: FamilyMember) -> None:
     details = {"profile": member.profile.display_name, "role": member.role}
     profile = member.profile
     log_action("family.member_removed", family_id=member.family_id, entity=member, details=details)
-    db.session.delete(member)
-    if profile.is_dependent and len(profile.memberships) <= 1:
+    delete_profile = profile.is_dependent and len(profile.memberships) <= 1 and not _has_entries(profile.id)
+    if delete_profile:
+        # l'eliminazione del profilo rimuove anche la sua appartenenza (cascade)
         delete_upload("avatars", profile.avatar_filename)
         db.session.delete(profile)
-    elif profile.user and profile.user.current_family_id == actor.family_id:
-        profile.user.current_family_id = None
+    else:
+        # Un dipendente con registrazioni resta nel database (senza famiglia) per conservare lo storico.
+        db.session.delete(member)
+        if profile.user and profile.user.current_family_id == actor.family_id:
+            profile.user.current_family_id = None
     db.session.commit()
 
 

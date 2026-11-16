@@ -97,6 +97,15 @@ def run_migrations_online():
     connectable = get_engine()
 
     with connectable.connect() as connection:
+        is_sqlite = connection.dialect.name == "sqlite"
+        if is_sqlite:
+            # IMPORTANTE: in SQLite le migrazioni "batch" ricreano le tabelle (DROP + RENAME).
+            # Con le chiavi esterne attive, il DROP di una tabella (es. users) cancellerebbe a
+            # cascata i dati collegati (profili, appartenenze...). Le disattiviamo durante la
+            # migrazione e verifichiamo l'integrità alla fine.
+            connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+            connection.commit()
+
         context.configure(
             connection=connection,
             target_metadata=get_metadata(),
@@ -105,6 +114,13 @@ def run_migrations_online():
 
         with context.begin_transaction():
             context.run_migrations()
+
+        if is_sqlite:
+            problems = connection.exec_driver_sql("PRAGMA foreign_key_check").fetchall()
+            connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+            connection.commit()
+            if problems:
+                raise RuntimeError(f"Integrità referenziale violata dopo la migrazione: {problems[:10]}")
 
 
 if context.is_offline_mode():

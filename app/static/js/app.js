@@ -57,6 +57,59 @@
     });
   });
 
+  var csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content;
+
+  // Registrazione rapida: invio senza ricaricare la pagina + notifica con link ai dettagli.
+  var performerSelect = document.querySelector("[data-quick-performer]");
+  if (performerSelect) {
+    performerSelect.addEventListener("change", function () {
+      document.querySelectorAll("[data-performer-input]").forEach(function (input) { input.value = performerSelect.value; });
+    });
+  }
+  document.querySelectorAll("[data-quick-form]").forEach(function (form) {
+    form.addEventListener("submit", function (event) {
+      if (!window.fetch) return; // senza fetch: invio classico
+      event.preventDefault();
+      var button = form.querySelector("button");
+      button.disabled = true;
+      fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { "Accept": "application/json", "X-CSRFToken": csrfToken },
+        credentials: "same-origin",
+      }).then(function (response) {
+        return response.json().then(function (data) { return { ok: response.ok, data: data }; });
+      }).then(function (result) {
+        var toastEl = document.getElementById("ltQuickToast");
+        toastEl.querySelector("[data-toast-text]").textContent = result.data.message;
+        var link = toastEl.querySelector("[data-toast-link]");
+        if (result.ok) {
+          link.href = result.data.details_url;
+          link.classList.remove("d-none");
+          button.classList.add("lt-done");
+          setTimeout(function () { button.classList.remove("lt-done"); }, 1200);
+          if (navigator.vibrate) navigator.vibrate(30);
+        } else {
+          link.classList.add("d-none");
+        }
+        window.bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 4000 }).show();
+      }).catch(function () {
+        form.submit(); // fallback: invio classico
+      }).finally(function () { button.disabled = false; });
+    });
+  });
+
+  // Form completo: cambiando attività si ricarica il form con i suoi indicatori.
+  document.querySelectorAll("[data-reload-activity]").forEach(function (select) {
+    select.addEventListener("change", function () {
+      var url = new URL(select.getAttribute("data-reload-activity"), window.location.origin);
+      url.searchParams.set("attivita", select.value);
+      var current = new URL(window.location.href);
+      if (current.searchParams.get("data")) url.searchParams.set("data", current.searchParams.get("data"));
+      window.location.href = url.toString();
+    });
+  });
+
   // Gli avvisi di successo/informazione si chiudono da soli.
   document.querySelectorAll(".lt-flashes .alert-success, .lt-flashes .alert-info").forEach(function (alert) {
     setTimeout(function () {

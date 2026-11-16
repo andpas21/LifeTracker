@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header, icon_badge, empty_state %}
+{% block title %}Registra{% endblock %}
+{% block content %}
+{% call page_header("Registrazione rapida", "Un tocco = +1. Potrai aggiungere i dettagli dopo.") %}
+  <a class="btn btn-outline-primary" href="{{ url_for('entries.new') }}"><i class="bi bi-pencil-square"></i> Modalità completa</a>
+{% endcall %}
+
+{% if form.performed_by_profile_id.choices|length > 1 %}
+<div class="mb-3 lt-narrow">
+  <label class="form-label small text-body-secondary" for="ltQuickPerformer">Registra per</label>
+  <select id="ltQuickPerformer" class="form-select" data-quick-performer>
+    {% for id, name in form.performed_by_profile_id.choices %}
+      <option value="{{ id }}" {{ 'selected' if id == form.performed_by_profile_id.data }}>{{ name }}</option>
+    {% endfor %}
+  </select>
+</div>
+{% endif %}
+
+{% if activities %}
+<div class="lt-quick-grid" data-quick-grid>
+  {% for a in activities %}
+    <form method="post" action="{{ url_for('entries.quick_add', activity_id=a.id) }}" data-quick-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="performed_by_profile_id" value="{{ form.performed_by_profile_id.data }}" data-performer-input>
+      <button type="submit" class="lt-quick-btn" style="--lt-color: {{ a.display_color }}">
+        <span class="lt-quick-icon"><i class="bi bi-{{ a.display_icon }}"></i></span>
+        <span class="lt-quick-name">{{ a.name }}</span>
+        <span class="lt-quick-plus">+{{ a.default_quantity|num }}</span>
+      </button>
+    </form>
+  {% endfor %}
+</div>
+{% elif not others %}
+  <div class="card lt-card">
+    {% call empty_state('grid', 'Nessuna attività', 'Crea categorie e attività nel catalogo per iniziare a registrare.') %}
+      {% if can_create_catalog %}<a class="btn btn-primary" href="{{ url_for('catalog.index') }}">Vai al catalogo</a>{% endif %}
+    {% endcall %}
+  </div>
+{% endif %}
+
+{% if others %}
+  <h2 class="h6 text-body-secondary mt-4">Altre attività (modalità completa)</h2>
+  <div class="lt-activity-grid">
+    {% for a in others %}
+      <a class="lt-activity-chip" href="{{ url_for('entries.new', attivita=a.id) }}">
+        {{ icon_badge(a.display_icon, a.display_color, 32) }}<span class="fw-semibold text-truncate">{{ a.name }}</span>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="toast-container position-fixed lt-toast-container p-3">
+  <div class="toast align-items-center border-0" role="status" aria-live="polite" aria-atomic="true" id="ltQuickToast">
+    <div class="d-flex">
+      <div class="toast-body"><strong data-toast-text></strong><br><a href="#" data-toast-link class="small">Aggiungi dettagli</a></div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Chiudi"></button>
+    </div>
+  </div>
+</div>
+{% endblock %}

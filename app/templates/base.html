@@ -92,8 +92,10 @@
   <nav class="lt-bottomnav d-lg-none">
     {% set ep = request.endpoint or '' %}
     <a href="{{ url_for('main.home') }}" class="{{ 'active' if ep == 'main.home' }}"><i class="bi bi-house"></i><span>Home</span></a>
+    <a href="{{ url_for('entries.index') }}" class="{{ 'active' if ep in ('entries.index', 'entries.detail', 'entries.edit') }}"><i class="bi bi-journal-text"></i><span>Storico</span></a>
+    <a href="{{ url_for('entries.quick') }}" class="lt-bottomnav-plus {{ 'active' if ep in ('entries.quick', 'entries.new') }}" aria-label="Registra attività"><span><i class="bi bi-plus-lg"></i></span></a>
+    <a href="{{ url_for('catalog.index') }}" class="{{ 'active' if ep.startswith('catalog.') }}"><i class="bi bi-grid"></i><span>Catalogo</span></a>
     <a href="{{ url_for('family.overview') }}" class="{{ 'active' if ep.startswith('family.') }}"><i class="bi bi-people"></i><span>Famiglia</span></a>
-    <a href="{{ url_for('profile.edit') }}" class="{{ 'active' if ep.startswith('profile.') }}"><i class="bi bi-person-circle"></i><span>Profilo</span></a>
   </nav>
 </div>
 {% else %}

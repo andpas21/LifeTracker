@@ -1,0 +1,21 @@
+{# Riga di una registrazione: richiede "e" (ActivityEntry) e la macro avatar/icon_badge importate #}
+<a class="list-group-item list-group-item-action lt-entry-row" href="{{ url_for('entries.detail', entry_id=e.id) }}">
+  <div class="d-flex align-items-center gap-3">
+    {{ icon_badge(e.activity.display_icon, e.activity.display_color, 40) }}
+    <div class="flex-fill min-w-0">
+      <div class="d-flex align-items-baseline gap-2">
+        <span class="fw-semibold text-truncate">{{ e.activity.name }}</span>
+        <span class="badge rounded-pill text-bg-light border">+{{ e.quantity|num }} {{ e.activity.count_label }}</span>
+        {% if e.scope == 'family' %}<i class="bi bi-people text-body-secondary" title="Familiare"></i>{% endif %}
+        {% if e.visibility == 'private' %}<i class="bi bi-lock text-body-secondary" title="Privata"></i>{% endif %}
+      </div>
+      <div class="small text-body-secondary text-truncate">
+        {{ e.occurred_at|localdt }} · {{ e.performed_by.display_name }}
+        {% for v in e.metric_values[:3] %} · {{ format_metric(v) }}{% endfor %}
+        {% if e.description %} · {{ e.description }}{% endif %}
+      </div>
+      {% if e.tags %}<div class="mt-1">{% for t in e.tags %}<span class="lt-tag me-1" style="--lt-color: {{ t.color }}">#{{ t.name }}</span>{% endfor %}</div>{% endif %}
+    </div>
+    {{ avatar(e.performed_by, 28, 'd-none d-sm-inline-block') }}
+  </div>
+</a>

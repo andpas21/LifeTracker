@@ -59,11 +59,12 @@ def create_app(config_name: str | None = None) -> Flask:
 def _register_blueprints(app: Flask) -> None:
     from app.blueprints.auth import bp as auth_bp
     from app.blueprints.catalog import bp as catalog_bp
+    from app.blueprints.entries import bp as entries_bp
     from app.blueprints.family import bp as family_bp
     from app.blueprints.main import bp as main_bp
     from app.blueprints.profile import bp as profile_bp
 
-    for bp in (main_bp, auth_bp, family_bp, profile_bp, catalog_bp):
+    for bp in (main_bp, auth_bp, family_bp, profile_bp, catalog_bp, entries_bp):
         app.register_blueprint(bp)
 
 
@@ -89,6 +90,7 @@ def _register_template_helpers(app: Flask) -> None:
     from app.models import ROLE_LABELS
     from app.services import family_service
     from app.services.audit_service import action_label
+    from app.services.entry_service import format_metric_value
     from app.utils.security import get_current_membership
     from app.utils.timezone import format_local
 
@@ -101,6 +103,14 @@ def _register_template_helpers(app: Flask) -> None:
     app.add_template_filter(fmt_number, "num")
     app.add_template_filter(fmt_duration, "duration")
     app.add_template_filter(fmt_hours, "hours")
+
+    @app.template_filter("weekday")
+    def weekday(value):
+        from app.services.period import WEEKDAYS_IT
+        from app.utils.timezone import to_local
+
+        local = to_local(value) if hasattr(value, "hour") else value
+        return WEEKDAYS_IT[local.weekday()].capitalize() if local else ""
 
     @app.template_filter("datefmt")
     def datefmt(value, fmt="%d/%m/%Y"):
@@ -120,6 +130,7 @@ def _register_template_helpers(app: Flask) -> None:
             else [],
             "role_labels": ROLE_LABELS,
             "action_label": action_label,
+            "format_metric": format_metric_value,
         }
 
 
