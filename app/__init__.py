@@ -58,13 +58,16 @@ def create_app(config_name: str | None = None) -> Flask:
 
 def _register_blueprints(app: Flask) -> None:
     from app.blueprints.auth import bp as auth_bp
+    from app.blueprints.calendar import bp as calendar_bp
     from app.blueprints.catalog import bp as catalog_bp
+    from app.blueprints.dashboard import bp as dashboard_bp
     from app.blueprints.entries import bp as entries_bp
+    from app.blueprints.goals import bp as goals_bp
     from app.blueprints.family import bp as family_bp
     from app.blueprints.main import bp as main_bp
     from app.blueprints.profile import bp as profile_bp
 
-    for bp in (main_bp, auth_bp, family_bp, profile_bp, catalog_bp, entries_bp):
+    for bp in (main_bp, auth_bp, family_bp, profile_bp, catalog_bp, entries_bp, dashboard_bp, goals_bp, calendar_bp):
         app.register_blueprint(bp)
 
 
@@ -103,6 +106,14 @@ def _register_template_helpers(app: Flask) -> None:
     app.add_template_filter(fmt_number, "num")
     app.add_template_filter(fmt_duration, "duration")
     app.add_template_filter(fmt_hours, "hours")
+
+    @app.template_filter("duration_h")
+    def duration_h(hours):
+        return fmt_duration(float(hours) * 3600) if hours is not None else ""
+
+    @app.template_filter("dict_without")
+    def dict_without(mapping, *keys):
+        return {k: v for k, v in mapping.items() if k not in keys}
 
     @app.template_filter("weekday")
     def weekday(value):

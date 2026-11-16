@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon_badge, avatar %}
+{% block title %}Calendario{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0 me-auto">{{ title }}{% if view == 'giorno' %} <span class="text-body-secondary fs-5">{{ day|weekday }}</span>{% endif %}</h1>
+  <div class="btn-group btn-group-sm">
+    <a class="btn btn-outline-secondary" href="{{ url_for('calendar.index', vista=view, data=prev_day.isoformat(), **args) }}" aria-label="Precedente" title="Precedente"><i class="bi bi-chevron-left"></i></a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('calendar.index', vista=view, **args) }}">Oggi</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('calendar.index', vista=view, data=next_day.isoformat(), **args) }}" aria-label="Successivo" title="Successivo"><i class="bi bi-chevron-right"></i></a>
+  </div>
+  <div class="btn-group btn-group-sm" role="group" aria-label="Vista">
+    {% for key, label in views.items() %}
+      <a class="btn {{ 'btn-primary' if view == key else 'btn-outline-primary' }}" href="{{ url_for('calendar.index', vista=key, data=day.isoformat(), **args) }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+<form method="get" class="row g-2 mb-3 align-items-end">
+  <input type="hidden" name="vista" value="{{ view }}"><input type="hidden" name="data" value="{{ day.isoformat() }}">
+  <div class="col-6 col-md-3"><select name="persona" class="form-select form-select-sm" aria-label="Persona" data-autosubmit>
+    <option value="">Tutte le persone</option>
+    {% for p in profiles %}<option value="{{ p.id }}" {{ 'selected' if profile_id == p.id }}>{{ p.display_name }}</option>{% endfor %}
+  </select></div>
+  <div class="col-6 col-md-3"><select name="categoria" class="form-select form-select-sm" aria-label="Categoria" data-autosubmit>
+    <option value="">Tutte le categorie</option>
+    {% for id, name in categories %}<option value="{{ id }}" {{ 'selected' if category_id == id }}>{{ name }}</option>{% endfor %}
+  </select></div>
+  <noscript><div class="col-auto"><button class="btn btn-sm btn-primary">Filtra</button></div></noscript>
+</form>
+
+<div class="row g-3">
+  <div class="col-12 col-xl-9">
+  {% if view == 'mese' %}
+    <div class="lt-cal card lt-card">
+      <div class="lt-cal-head">{% for w in weekdays %}<div>{{ w }}</div>{% endfor %}</div>
+      {% for week in weeks %}
+        <div class="lt-cal-row">
+          {% for d in week %}
+            {% set items = days.get(d, []) %}
+            <a class="lt-cal-day {{ 'lt-out' if d.month != month }} {{ 'lt-today' if d == today }}" href="{{ url_for('calendar.index', vista='giorno', data=d.isoformat(), **args) }}">
+              <span class="lt-cal-num">{{ d.day }}</span>
+              {% if items %}
+                <span class="lt-cal-dots">
+                  {% for e in items[:4] %}<span class="lt-cal-dot" style="--lt-color: {{ e.activity.display_color }}" title="{{ e.activity.name }}"><i class="bi bi-{{ e.activity.display_icon }}"></i></span>{% endfor %}
+                </span>
+                <span class="lt-cal-count">{{ items|length }}</span>
+              {% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  {% elif view == 'settimana' %}
+    <div class="lt-week">
+      {% for d in week_days %}
+        {% set items = days.get(d, []) %}
+        <div class="card lt-card lt-week-day {{ 'lt-today' if d == today }}">
+          <div class="card-header d-flex align-items-center">
+            <a class="fw-semibold text-decoration-none text-body flex-fill" href="{{ url_for('calendar.index', vista='giorno', data=d.isoformat(), **args) }}">{{ weekdays[d.weekday()]|capitalize }} {{ d.day }}</a>
+            <a class="btn btn-sm btn-link p-0" href="{{ url_for('entries.new', data=d.isoformat()) }}" title="Aggiungi" aria-label="Aggiungi attività il {{ d.strftime('%d/%m') }}"><i class="bi bi-plus-circle"></i></a>
+          </div>
+          <div class="list-group list-group-flush">
+            {% for e in items %}
+              <a class="list-group-item list-group-item-action small d-flex gap-2 align-items-center" href="{{ url_for('entries.detail', entry_id=e.id) }}">
+                {{ icon_badge(e.activity.display_icon, e.activity.display_color, 24) }}
+                <span class="min-w-0"><span class="d-block text-truncate fw-semibold">{{ e.activity.name }}</span>
+                <span class="text-body-secondary">{{ e.occurred_at|localdt('%H:%M') }} · {{ e.performed_by.display_name }}</span></span>
+              </a>
+            {% else %}
+              <div class="list-group-item small text-body-tertiary">—</div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% set items = days.get(day, []) %}
+    <div class="card lt-card">
+      <div class="card-header d-flex align-items-center">
+        <span class="fw-semibold flex-fill">{{ items|length }} registrazioni</span>
+        <a class="btn btn-sm btn-primary" href="{{ url_for('entries.new', data=day.isoformat()) }}"><i class="bi bi-plus-lg"></i> Aggiungi attività</a>
+      </div>
+      {% if items %}
+        <div class="list-group list-group-flush">{% for e in items %}{% include "partials/_entry_row.html" %}{% endfor %}</div>
+      {% else %}
+        <div class="card-body text-body-secondary">Nessuna attività registrata in questo giorno.</div>
+      {% endif %}
+    </div>
+  {% endif %}
+  </div>
+
+  <div class="col-12 col-xl-3">
+    <div class="card lt-card">
+      <div class="card-header fw-semibold"><i class="bi bi-clipboard-data"></i> Riepilogo {{ {'mese': 'del mese', 'settimana': 'della settimana', 'giorno': 'del giorno'}[view] }}</div>
+      <div class="card-body">
+        <div class="d-flex gap-3 mb-3">
+          <div><div class="fs-3 fw-bold">{{ summary.count }}</div><div class="small text-body-secondary">registrazioni</div></div>
+          {% if summary.has_time %}<div><div class="fs-3 fw-bold">{{ summary.time }}</div><div class="small text-body-secondary">tempo dedicato</div></div>{% endif %}
+        </div>
+        {% for label, color, value in summary.categories %}
+          <div class="d-flex align-items-center gap-2 small mb-1"><span class="lt-swatch" style="--lt-color: {{ color }}"></span><span class="flex-fill">{{ label }}</span><strong>{{ value|int }}</strong></div>
+        {% endfor %}
+        {% if summary.people|length > 1 %}
+          <hr>
+          {% for label, color, value in summary.people %}
+            <div class="d-flex align-items-center gap-2 small mb-1"><span class="lt-swatch" style="--lt-color: {{ color }}"></span><span class="flex-fill">{{ label }}</span><strong>{{ value|int }}</strong></div>
+          {% endfor %}
+        {% endif %}
+        {% if view != 'giorno' %}<a class="btn btn-sm btn-outline-primary mt-3 w-100" href="{{ url_for('entries.new', data=day.isoformat()) }}"><i class="bi bi-plus-lg"></i> Aggiungi attività</a>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

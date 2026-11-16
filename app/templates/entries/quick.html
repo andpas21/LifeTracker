@@ -50,12 +50,5 @@
   </div>
 {% endif %}
 
-<div class="toast-container position-fixed lt-toast-container p-3">
-  <div class="toast align-items-center border-0" role="status" aria-live="polite" aria-atomic="true" id="ltQuickToast">
-    <div class="d-flex">
-      <div class="toast-body"><strong data-toast-text></strong><br><a href="#" data-toast-link class="small">Aggiungi dettagli</a></div>
-      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Chiudi"></button>
-    </div>
-  </div>
-</div>
+{% include "partials/_quick_toast.html" %}
 {% endblock %}

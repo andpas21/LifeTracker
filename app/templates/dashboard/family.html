@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "dashboard/_macros.html" import chart_card, heatmap, goals_card, kpi_tile, delta_badge %}
+{% block title %}Dashboard famiglia{% endblock %}
+{% block content %}
+{% include "dashboard/_tabs.html" %}
+{% with endpoint='dashboard.family', show_person=True %}{% include "dashboard/_filters.html" %}{% endwith %}
+
+<div class="lt-kpi-grid mb-3">
+  <div class="lt-kpi lt-kpi-hero">
+    <div class="lt-kpi-label">{{ measure.label }} · {{ period.label }}</div>
+    <div class="lt-kpi-value">{{ kpi.total }}</div>
+    <div class="lt-kpi-sub">{{ delta_badge(kpi.delta) }}</div>
+  </div>
+  {{ kpi_tile('Registrazioni', kpi.count, period.label, 'journal-check') }}
+  {{ kpi_tile('Attività condivise', shared_count, 'ambito familiare', 'people') }}
+  {{ kpi_tile('Tempo dedicato', kpi.time, 'di cui ' ~ shared_time ~ ' insieme', 'stopwatch') }}
+  {{ kpi_tile('Componenti attivi', members_active, 'nel periodo', 'person-check') }}
+  {{ kpi_tile('Giorni attivi', kpi.active_days, 'su ' ~ period.days ~ ' giorni', 'check2-circle') }}
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-xl-8">{{ chart_card('cTrendM', 'Andamento per componente', trend_members, measure.label) }}</div>
+  <div class="col-12 col-xl-4">{{ chart_card('cMembers', 'Distribuzione per componente', by_member, measure.label) }}</div>
+  <div class="col-12 col-xl-6">{{ chart_card('cScope', 'Attività personali e condivise', trend_scope, measure.label) }}</div>
+  <div class="col-12 col-xl-6">{{ chart_card('cCat', 'Distribuzione per categoria', by_category, measure.label) }}</div>
+  <div class="col-12">{{ chart_card('cCmp', 'Confronto con il periodo precedente', compare, period.previous().label ~ ' → ' ~ period.label) }}</div>
+  <div class="col-12 col-xl-8">{{ heatmap(heat, 'Calendario della famiglia') }}</div>
+  <div class="col-12 col-xl-4">{{ goals_card(goals, 'Obiettivi della famiglia', 'Nessun obiettivo familiare o condiviso attivo.') }}</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

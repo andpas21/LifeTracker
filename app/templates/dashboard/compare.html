@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "dashboard/_macros.html" import chart_card %}
+{% block title %}Confronti{% endblock %}
+{% block content %}
+{% include "dashboard/_tabs.html" %}
+<ul class="nav nav-underline lt-subtabs mb-3 flex-nowrap overflow-auto">
+  {% for key, label in views.items() %}
+    <li class="nav-item"><a class="nav-link text-nowrap {{ 'active' if view == key }}" href="{{ url_for('dashboard.compare', vista=key, **(args|dict_without('vista'))) }}">{{ label }}</a></li>
+  {% endfor %}
+</ul>
+{% with endpoint='dashboard.compare', show_person=(view in ('periodi', 'categorie', 'attivita')) %}{% include "dashboard/_filters.html" %}{% endwith %}
+{% if view == 'periodi' %}
+  <form method="get" class="d-flex gap-2 align-items-center mb-3">
+    {% for k, val in args.items() if k != 'anno' %}<input type="hidden" name="{{ k }}" value="{{ val }}">{% endfor %}
+    <input type="hidden" name="vista" value="periodi">
+    <label class="small text-body-secondary" for="ltYear">Anno</label>
+    <input id="ltYear" type="number" name="anno" min="2000" max="2100" value="{{ year }}" class="form-control form-control-sm lt-w-auto">
+    <button class="btn btn-sm btn-outline-primary" type="submit">Mostra</button>
+  </form>
+{% endif %}
+{% for note in notes %}<div class="alert alert-info small py-2"><i class="bi bi-info-circle"></i> {{ note }}</div>{% endfor %}
+<div class="row g-3">
+  {% for title, spec in charts.items() %}
+    <div class="col-12 {{ 'col-xl-6' if charts|length > 1 and spec.type in ('radar', 'doughnut') or (charts|length == 3 and loop.index > 1) }}">
+      {{ chart_card('cmp' ~ loop.index, title, spec, measure.label, height=(360 if spec.type == 'radar' else 300)) }}
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

@@ -3,6 +3,10 @@
 <a class="nav-link {{ 'active' if ep == 'main.home' }}" href="{{ url_for('main.home') }}"><i class="bi bi-house"></i> Home</a>
 <a class="nav-link lt-nav-cta {{ 'active' if ep in ('entries.quick', 'entries.new') }}" href="{{ url_for('entries.quick') }}"><i class="bi bi-plus-circle-fill"></i> Registra</a>
 <a class="nav-link {{ 'active' if ep in ('entries.index', 'entries.detail', 'entries.edit') }}" href="{{ url_for('entries.index') }}"><i class="bi bi-journal-text"></i> Registrazioni</a>
+<div class="lt-nav-section">Analisi</div>
+<a class="nav-link {{ 'active' if ep.startswith('dashboard.') }}" href="{{ url_for('dashboard.personal') }}"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
+<a class="nav-link {{ 'active' if ep.startswith('calendar.') }}" href="{{ url_for('calendar.index') }}"><i class="bi bi-calendar3"></i> Calendario</a>
+<a class="nav-link {{ 'active' if ep.startswith('goals.') }}" href="{{ url_for('goals.index') }}"><i class="bi bi-trophy"></i> Obiettivi</a>
 <div class="lt-nav-section">Configurazione</div>
 <a class="nav-link {{ 'active' if ep.startswith('catalog.') }}" href="{{ url_for('catalog.index') }}"><i class="bi bi-grid"></i> Catalogo</a>
 <div class="lt-nav-section">Famiglia</div>

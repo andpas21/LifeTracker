@@ -1,41 +1,103 @@
 {% extends "base.html" %}
-{% from "partials/_macros.html" import avatar, page_header %}
+{% from "partials/_macros.html" import avatar, icon_badge, empty_state %}
+{% from "dashboard/_macros.html" import kpi_tile %}
 {% block title %}Home{% endblock %}
 {% block content %}
-{% call page_header("Ciao, " ~ current_user.display_name.split()[0] ~ "!", "Famiglia attiva: " ~ membership.family.name) %}{% endcall %}
+<div class="d-flex align-items-center gap-3 mb-3">
+  <div class="flex-fill">
+    <h1 class="h3 mb-0">Ciao, {{ current_user.display_name.split()[0] }}!</h1>
+    <p class="text-body-secondary mb-0">{{ membership.family.name }}</p>
+  </div>
+  <a class="btn btn-outline-primary d-none d-md-inline-block" href="{{ url_for('dashboard.personal') }}"><i class="bi bi-bar-chart-line"></i> Statistiche</a>
+</div>
 
-<div class="row g-3">
-  <div class="col-12 col-xl-8">
-    <div class="card lt-card h-100">
-      <div class="card-header d-flex align-items-center">
-        <span class="fw-semibold"><i class="bi bi-people"></i> Componenti della famiglia</span>
-        <a class="btn btn-sm btn-outline-primary ms-auto" href="{{ url_for('family.overview') }}">Gestisci</a>
+{% if not has_catalog %}
+  <div class="card lt-card mb-3">
+    {% call empty_state('stars', 'Iniziamo!', 'Crea le categorie e le attività che vuoi monitorare (es. Sport › Ciclismo con chilometri e durata). Poi basterà un tocco per registrarle.') %}
+      <a class="btn btn-primary" href="{{ url_for('catalog.new_category') }}"><i class="bi bi-folder-plus"></i> Crea la prima categoria</a>
+    {% endcall %}
+  </div>
+{% else %}
+  <div class="card lt-card mb-3">
+    <div class="card-header d-flex align-items-center">
+      <span class="fw-semibold flex-fill"><i class="bi bi-lightning-charge"></i> Registra con un tocco</span>
+      <a class="small" href="{{ url_for('entries.quick') }}">Tutte</a>
+    </div>
+    <div class="card-body">
+      {% if quick %}
+      <div class="lt-quick-strip">
+        {% for a in quick %}
+          <form method="post" action="{{ url_for('entries.quick_add', activity_id=a.id) }}" data-quick-form>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="performed_by_profile_id" value="{{ membership.profile_id }}">
+            <button type="submit" class="lt-quick-btn lt-quick-btn-sm" style="--lt-color: {{ a.display_color }}">
+              <span class="lt-quick-icon"><i class="bi bi-{{ a.display_icon }}"></i></span>
+              <span class="lt-quick-name">{{ a.name }}</span>
+            </button>
+          </form>
+        {% endfor %}
       </div>
-      <div class="card-body">
-        <div class="lt-member-grid">
-          {% for m in members %}
-            <div class="lt-member-tile">
-              {{ avatar(m.profile, 56) }}
-              <div class="fw-semibold text-truncate mt-2">{{ m.profile.display_name }}</div>
-              <span class="badge rounded-pill lt-role-{{ m.role }}">{{ m.role_label }}</span>
-            </div>
-          {% endfor %}
-        </div>
-      </div>
+      {% else %}
+        <p class="small text-body-secondary mb-0">Nessuna attività segnata per la registrazione rapida. <a href="{{ url_for('entries.new') }}">Usa la modalità completa</a>.</p>
+      {% endif %}
     </div>
   </div>
-  <div class="col-12 col-xl-4">
+{% endif %}
+
+<div class="lt-kpi-grid lt-kpi-grid-4 mb-3">
+  {{ kpi_tile('Oggi', today_count, 'le mie registrazioni', 'sun') }}
+  {{ kpi_tile('Famiglia oggi', family_today_count, 'registrazioni', 'people') }}
+  {{ kpi_tile('Questa settimana', week_count, 'giorni attivi: ' ~ week_days, 'calendar-week') }}
+  {{ kpi_tile('Tempo questa settimana', week_time, 'dalle durate registrate', 'stopwatch') }}
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-xl-7">
     <div class="card lt-card h-100">
-      <div class="card-header fw-semibold"><i class="bi bi-lightning-charge"></i> Azioni rapide</div>
-      <div class="list-group list-group-flush">
-        <a class="list-group-item list-group-item-action" href="{{ url_for('profile.edit') }}"><i class="bi bi-person-circle me-2"></i>Completa il tuo profilo</a>
+      <div class="card-header d-flex align-items-center">
+        <span class="fw-semibold flex-fill"><i class="bi bi-clock-history"></i> Ultime attività</span>
+        <a class="small" href="{{ url_for('entries.index') }}">Storico</a>
+      </div>
+      {% if recent %}
+        <div class="list-group list-group-flush">{% for e in recent %}{% include "partials/_entry_row.html" %}{% endfor %}</div>
+      {% else %}
+        <div class="card-body small text-body-secondary">Ancora nessuna registrazione.</div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-12 col-xl-5 d-flex flex-column gap-3">
+    <div class="card lt-card">
+      <div class="card-header d-flex align-items-center">
+        <span class="fw-semibold flex-fill"><i class="bi bi-trophy"></i> I miei obiettivi</span>
+        <a class="small" href="{{ url_for('goals.index') }}">Tutti</a>
+      </div>
+      <div class="card-body">
+        {% for p in goals %}{% include "goals/_progress.html" %}{% else %}
+          <p class="small text-body-secondary mb-2">Nessun obiettivo in corso.</p>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('goals.new') }}"><i class="bi bi-plus-lg"></i> Nuovo obiettivo</a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card lt-card">
+      <div class="card-header d-flex align-items-center">
+        <span class="fw-semibold flex-fill"><i class="bi bi-people"></i> Famiglia</span>
+        <a class="small" href="{{ url_for('family.overview') }}">Gestisci</a>
+      </div>
+      <div class="card-body d-flex flex-wrap gap-3">
+        {% for m in members %}
+          <a class="text-center text-decoration-none text-body lt-member-mini" href="{{ url_for('entries.index', persona=m.profile_id) }}" title="Registrazioni di {{ m.profile.display_name }}">
+            {{ avatar(m.profile, 48) }}<div class="small text-truncate mt-1">{{ m.profile.display_name.split()[0] }}</div>
+          </a>
+        {% endfor %}
         {% if membership.is_admin %}
-          <a class="list-group-item list-group-item-action" href="{{ url_for('family.invitations') }}"><i class="bi bi-envelope-plus me-2"></i>Invita un familiare</a>
-          <a class="list-group-item list-group-item-action" href="{{ url_for('family.add_dependent') }}"><i class="bi bi-person-plus me-2"></i>Aggiungi un profilo dipendente</a>
+          <a class="text-center text-decoration-none lt-member-mini" href="{{ url_for('family.invitations') }}" title="Invita un familiare">
+            <span class="lt-avatar lt-avatar-add"><i class="bi bi-plus-lg"></i></span><div class="small mt-1">Invita</div>
+          </a>
         {% endif %}
-        <a class="list-group-item list-group-item-action" href="{{ url_for('family.welcome') }}"><i class="bi bi-house-add me-2"></i>Crea o unisciti a un'altra famiglia</a>
       </div>
     </div>
   </div>
 </div>
+
+{% include "partials/_quick_toast.html" %}
 {% endblock %}

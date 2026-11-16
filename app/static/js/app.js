@@ -110,6 +110,37 @@
     });
   });
 
+  // Filtri dashboard: le date "dal/al" servono solo con il periodo personalizzato.
+  document.querySelectorAll("[data-period-select]").forEach(function (select) {
+    var toggle = function () {
+      document.querySelectorAll("[data-custom-range]").forEach(function (el) {
+        el.classList.toggle("d-none", select.value !== "custom");
+        el.querySelector("input").disabled = select.value !== "custom";
+      });
+    };
+    select.addEventListener("change", toggle);
+    toggle();
+  });
+
+  // Form obiettivi: mostra solo i campi pertinenti.
+  document.querySelectorAll("[data-goal-form]").forEach(function (form) {
+    var update = function () {
+      var scope = form.querySelector('input[name="scope"]:checked');
+      var personal = !scope || scope.value === "personal";
+      var target = form.querySelector('[name="target_type"]').value;
+      form.querySelector("[data-goal-personal]").classList.toggle("d-none", !personal);
+      form.querySelector("[data-goal-metric]").classList.toggle("d-none", target !== "metric");
+      form.querySelector("[data-goal-scope-fields]").classList.toggle("d-none", target === "metric");
+    };
+    form.addEventListener("change", update);
+    update();
+  });
+
+  // Select che inviano subito il form (filtri calendario).
+  document.querySelectorAll("[data-autosubmit]").forEach(function (el) {
+    el.addEventListener("change", function () { el.form.submit(); });
+  });
+
   // Gli avvisi di successo/informazione si chiudono da soli.
   document.querySelectorAll(".lt-flashes .alert-success, .lt-flashes .alert-info").forEach(function (alert) {
     setTimeout(function () {

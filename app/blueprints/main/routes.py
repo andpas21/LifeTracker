@@ -5,6 +5,7 @@ from app.blueprints.main import bp
 from app.extensions import db
 from app.services import family_service
 from app.utils.security import get_current_membership
+from app.utils.timezone import to_local
 
 
 @bp.route("/")
@@ -14,10 +15,29 @@ def home():
     membership = get_current_membership()
     if membership is None:
         return redirect(url_for("family.welcome"))
+    from app.services import catalog_service, entry_service, goal_service, stats_service
+    from app.services.period import period_for
+    from app.services.stats_service import StatsFilters
+
+    week = period_for("week")
+    today = period_for("day")
+    filters = StatsFilters(period=week)
+    week_entries = stats_service.load_entries(membership, week, filters, profile_id=membership.profile_id)
+    today_entries = stats_service.load_entries(membership, today, filters, profile_id=membership.profile_id)
+    family_today = stats_service.load_entries(membership, today, StatsFilters(period=today))
     return render_template(
         "main/home.html",
         membership=membership,
         members=family_service.family_members(membership.family),
+        quick=catalog_service.quick_activities(membership.family_id)[:8],
+        has_catalog=bool(catalog_service.active_activities(membership.family_id)),
+        recent=entry_service.recent_entries(membership, 6),
+        goals=goal_service.dashboard_goals(membership, personal=True)[:4],
+        today_count=len(today_entries),
+        family_today_count=len(family_today),
+        week_count=len(week_entries),
+        week_time=stats_service.fmt_hours(stats_service.duration_seconds(week_entries)),
+        week_days=len({to_local(e.occurred_at).date() for e in week_entries}),
     )
 
 

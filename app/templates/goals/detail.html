@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header, post_button %}
+{% block title %}{{ goal.title }}{% endblock %}
+{% block content %}
+{% call page_header(goal.title, goal.description) %}
+  {% if can_edit %}
+    <a class="btn btn-outline-primary" href="{{ url_for('goals.edit', goal_id=goal.id) }}"><i class="bi bi-pencil"></i> Modifica</a>
+    {{ post_button(url_for('goals.archive', goal_id=goal.id), 'Riapri' if goal.status == 'archived' else 'Archivia', icon='archive') }}
+    {{ post_button(url_for('goals.delete', goal_id=goal.id), 'Elimina', icon='trash', btn_class='btn-outline-danger', confirm='Eliminare l\'obiettivo e il suo storico?') }}
+  {% endif %}
+{% endcall %}
+<div class="row g-3">
+  <div class="col-12 col-lg-7">
+    <div class="card lt-card mb-3"><div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="lt-goal-ring" style="--pct: {{ p.pct }}"><span>{{ p.pct }}%</span></div>
+        <div>
+          <div class="fs-4 fw-semibold">{{ p.value_label }}</div>
+          <div class="text-body-secondary">su {{ p.target_label }} · {{ p.start.strftime('%d/%m/%Y') }} – {{ p.end.strftime('%d/%m/%Y') }}</div>
+          <span class="badge lt-goal-status-{{ goal.status }}">{{ goal.status_label }}</span>
+        </div>
+      </div>
+      <ul class="list-group list-group-flush small">
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Tipo</span><strong>{{ 'Familiare' if goal.scope == 'family' else 'Individuale di ' ~ goal.owner.display_name }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Ricorrenza</span><strong>{{ goal.recurrence_label }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Ambito</span><strong>{{ goal.activity.name if goal.activity else (goal.category.name if goal.category else 'Tutte le attività') }}{% if goal.metric %} › {{ goal.metric.name }}{% endif %}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Visibilità</span><strong>{{ 'Famiglia' if goal.visibility == 'family' else 'Privato' }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Creato da</span><strong>{{ goal.created_by.display_name if goal.created_by else '—' }}</strong></li>
+      </ul>
+    </div></div>
+    {% if history %}
+      <div class="card lt-card"><div class="card-header fw-semibold">Risultati per periodo</div>
+        <ul class="list-group list-group-flush small">
+          {% for h in history %}
+            <li class="list-group-item">
+              <div class="d-flex mb-1"><span class="flex-fill">{{ h.start.strftime('%d/%m/%Y') }} – {{ h.end.strftime('%d/%m/%Y') }}</span>
+                <strong>{{ h.value_label }}</strong>{% if h.done %}<i class="bi bi-check-circle-fill text-success ms-2" title="Raggiunto"></i>{% endif %}</div>
+              <div class="progress lt-progress"><div class="progress-bar {{ 'bg-success' if h.done }}" style="width: {{ h.pct }}%"></div></div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+  <div class="col-12 col-lg-5">
+    <div class="card lt-card"><div class="card-header fw-semibold"><i class="bi bi-clock-history"></i> Storico</div>
+      <ul class="list-group list-group-flush small">
+        {% for ev in goal.events %}
+          <li class="list-group-item d-flex gap-2"><span class="flex-fill">{{ event_labels.get(ev.event, ev.event) }}{% if ev.event in ('completed', 'progress_50') and ev.period_key %} <span class="text-body-secondary">(periodo dal {{ ev.period_key[8:10] }}/{{ ev.period_key[5:7] }})</span>{% endif %}</span><span class="text-body-secondary">{{ ev.created_at|localdt }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

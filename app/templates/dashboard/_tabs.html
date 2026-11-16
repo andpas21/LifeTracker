@@ -1,0 +1,6 @@
+{% set ep = request.endpoint %}
+<ul class="nav nav-pills lt-tabs mb-3">
+  <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'dashboard.personal' }}" href="{{ url_for('dashboard.personal') }}"><i class="bi bi-person"></i> Personale</a></li>
+  <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'dashboard.family' }}" href="{{ url_for('dashboard.family') }}"><i class="bi bi-people"></i> Famiglia</a></li>
+  <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'dashboard.compare' }}" href="{{ url_for('dashboard.compare') }}"><i class="bi bi-arrow-left-right"></i> Confronti</a></li>
+</ul>

@@ -1,0 +1,15 @@
+{# Barra di avanzamento di un obiettivo: richiede "p" (goal_service.Progress) #}
+<a class="lt-goal d-block text-decoration-none text-body mb-3" href="{{ url_for('goals.detail', goal_id=p.goal.id) }}">
+  <div class="d-flex align-items-baseline gap-2">
+    <span class="fw-semibold flex-fill text-truncate">{{ p.goal.title }}</span>
+    <span class="small fw-semibold">{{ p.pct }}%</span>
+  </div>
+  <div class="progress lt-progress" role="progressbar" aria-label="{{ p.goal.title }}" aria-valuenow="{{ p.pct }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar {{ 'bg-success' if p.done }}" style="width: {{ p.pct }}%"></div>
+  </div>
+  <div class="d-flex small text-body-secondary mt-1 gap-2">
+    <span class="flex-fill">{{ p.value_label }} / {{ p.target_label }}</span>
+    <span>{% if p.goal.owner %}{{ p.goal.owner.display_name }} · {% else %}Famiglia · {% endif %}
+      {% if p.done %}<i class="bi bi-check-circle-fill text-success"></i> raggiunto{% elif p.days_left is not none %}{{ p.days_left }} gg{% endif %}</span>
+  </div>
+</a>

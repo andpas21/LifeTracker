@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "dashboard/_macros.html" import chart_card, heatmap, goals_card, kpi_tile, delta_badge %}
+{% block title %}Dashboard personale{% endblock %}
+{% block content %}
+{% include "dashboard/_tabs.html" %}
+{% with endpoint='dashboard.personal', show_person=False %}{% include "dashboard/_filters.html" %}{% endwith %}
+
+<div class="lt-kpi-grid mb-3">
+  <div class="lt-kpi lt-kpi-hero">
+    <div class="lt-kpi-label">{{ measure.label }} · {{ period.label }}</div>
+    <div class="lt-kpi-value">{{ kpi.total }}</div>
+    <div class="lt-kpi-sub">{{ delta_badge(kpi.delta) }}</div>
+  </div>
+  {{ kpi_tile('Oggi', kpi.today, 'registrazioni', 'sun') }}
+  {{ kpi_tile('Questa settimana', kpi.week, 'registrazioni', 'calendar-week') }}
+  {{ kpi_tile('Questo mese', kpi.month, 'registrazioni', 'calendar3') }}
+  {{ kpi_tile('Tempo dedicato', kpi.time, period.label, 'stopwatch') }}
+  {{ kpi_tile('Giorni attivi', kpi.active_days, 'su ' ~ period.days ~ ' giorni', 'check2-circle') }}
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-xl-8">{{ chart_card('cTrend', 'Andamento', trend, measure.label ~ ' · ' ~ period.label) }}</div>
+  <div class="col-12 col-xl-4">{{ chart_card('cCat', 'Distribuzione per categoria', by_category, measure.label) }}</div>
+  <div class="col-12 col-xl-6">{{ chart_card('cAct', 'Attività più frequenti', by_activity, measure.label, height=320) }}</div>
+  <div class="col-12 col-xl-6">{{ chart_card('cCmp', 'Confronto con il periodo precedente', compare, period.previous().label ~ ' → ' ~ period.label, height=320) }}</div>
+  <div class="col-12 col-xl-8">{{ heatmap(heat) }}</div>
+  <div class="col-12 col-xl-4">{{ goals_card(goals, 'I miei obiettivi', 'Nessun obiettivo personale attivo.') }}</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
