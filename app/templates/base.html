@@ -1,0 +1,117 @@
+<!doctype html>
+{%- set theme_pref = current_user.theme if current_user.is_authenticated else 'auto' -%}
+<html lang="it" data-theme-pref="{{ theme_pref }}" data-bs-theme="{{ 'dark' if theme_pref == 'dark' else 'light' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}{{ app_name }}{% endblock %} · {{ app_name }}</title>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <link rel="manifest" href="{{ url_for('main.manifest') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% from "partials/_macros.html" import avatar %}
+
+{% if current_user.is_authenticated %}
+<div class="lt-shell">
+  {# ------------------------------------------------ sidebar (desktop) #}
+  <aside class="lt-sidebar d-none d-lg-flex flex-column">
+    <a class="lt-brand" href="{{ url_for('main.home') }}">
+      <span class="lt-logo">+1</span><span>{{ app_name }}</span>
+    </a>
+    {% include "partials/_family_switcher.html" %}
+    <nav class="nav flex-column lt-nav mt-2">
+      {% include "partials/_nav_items.html" %}
+    </nav>
+    <div class="mt-auto pt-3 border-top lt-sidebar-footer">
+      <a class="d-flex align-items-center gap-2 text-decoration-none text-body" href="{{ url_for('profile.edit') }}">
+        {{ avatar(current_user.profile, 36) }}
+        <span class="small">
+          <span class="d-block fw-semibold text-truncate lt-max-150">{{ current_user.display_name }}</span>
+          {% if current_membership %}<span class="text-body-secondary">{{ current_membership.role_label }}</span>{% endif %}
+        </span>
+      </a>
+      <div class="d-flex gap-2 mt-3">
+        {% include "partials/_theme_button.html" %}
+        <form method="post" action="{{ url_for('auth.logout') }}" class="flex-fill">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="bi bi-box-arrow-right"></i> Esci</button>
+        </form>
+      </div>
+    </div>
+  </aside>
+
+  {# ------------------------------------------------ topbar (mobile) #}
+  <header class="lt-topbar d-lg-none">
+    <a class="lt-brand mb-0" href="{{ url_for('main.home') }}"><span class="lt-logo">+1</span></a>
+    <div class="flex-fill text-truncate px-2">
+      <div class="fw-semibold text-truncate">{% block mobile_title %}{{ self.title() }}{% endblock %}</div>
+      {% if current_family %}<div class="small text-body-secondary text-truncate">{{ current_family.name }}</div>{% endif %}
+    </div>
+    <button class="btn btn-link text-body p-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#ltMobileMenu" aria-label="Menu">
+      {{ avatar(current_user.profile, 34) }}
+    </button>
+  </header>
+
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="ltMobileMenu" aria-labelledby="ltMobileMenuLabel">
+    <div class="offcanvas-header">
+      <div class="d-flex align-items-center gap-2" id="ltMobileMenuLabel">
+        {{ avatar(current_user.profile, 40) }}
+        <div><div class="fw-semibold">{{ current_user.display_name }}</div><div class="small text-body-secondary">{{ current_user.email }}</div></div>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Chiudi"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column">
+      {% include "partials/_family_switcher.html" %}
+      <nav class="nav flex-column lt-nav mt-2">{% include "partials/_nav_items.html" %}</nav>
+      <div class="mt-auto d-flex gap-2 pt-3 border-top">
+        {% include "partials/_theme_button.html" %}
+        <form method="post" action="{{ url_for('auth.logout') }}" class="flex-fill">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="bi bi-box-arrow-right"></i> Esci</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <main class="lt-main">
+    <div class="container-fluid lt-container">
+      {% include "partials/_flashes.html" %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  {# ------------------------------------------------ barra inferiore (mobile) #}
+  <nav class="lt-bottomnav d-lg-none">
+    {% set ep = request.endpoint or '' %}
+    <a href="{{ url_for('main.home') }}" class="{{ 'active' if ep == 'main.home' }}"><i class="bi bi-house"></i><span>Home</span></a>
+    <a href="{{ url_for('family.overview') }}" class="{{ 'active' if ep.startswith('family.') }}"><i class="bi bi-people"></i><span>Famiglia</span></a>
+    <a href="{{ url_for('profile.edit') }}" class="{{ 'active' if ep.startswith('profile.') }}"><i class="bi bi-person-circle"></i><span>Profilo</span></a>
+  </nav>
+</div>
+{% else %}
+<main class="lt-auth">
+  <div class="lt-auth-card">
+    <div class="text-center mb-4">
+      <span class="lt-logo lt-logo-lg">+1</span>
+      <h1 class="h4 mt-3 mb-0">{{ app_name }}</h1>
+      <p class="text-body-secondary small mb-0">Life analytics per te e la tua famiglia</p>
+    </div>
+    {% include "partials/_flashes.html" %}
+    {% block auth_content %}{% block content_anon %}{% endblock %}{% endblock %}
+  </div>
+</main>
+{% endif %}
+
+<script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

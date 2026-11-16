@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Offline{% endblock %}
+{% macro body() %}
+<div class="text-center py-5">
+  <i class="bi bi-wifi-off display-4 text-body-tertiary"></i>
+  <h1 class="h4 mt-3">Sei offline</h1>
+  <p class="text-body-secondary">LifeTracker non riesce a contattare il server. Controlla la connessione (o Tailscale) e riprova.</p>
+  <a href="{{ url_for('main.home') }}" class="btn btn-primary">Riprova</a>
+</div>
+{% endmacro %}
+{% block content %}{{ body() }}{% endblock %}
+{% block auth_content %}{{ body() }}{% endblock %}

@@ -1,0 +1,9 @@
+{% set icons = {'auto': 'circle-half', 'light': 'sun', 'dark': 'moon-stars'} %}
+{% set labels = {'auto': 'Tema automatico', 'light': 'Tema chiaro', 'dark': 'Tema scuro'} %}
+<form method="post" action="{{ url_for('profile.cycle_theme') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+  <button class="btn btn-sm btn-outline-secondary" type="submit" title="{{ labels[current_user.theme] }} (clic per cambiare)" aria-label="{{ labels[current_user.theme] }}">
+    <i class="bi bi-{{ icons[current_user.theme] }}"></i>
+  </button>
+</form>

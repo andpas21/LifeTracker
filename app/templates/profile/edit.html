@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import avatar, field, page_header, post_button %}
+{% block title %}Profilo{% endblock %}
+{% block content %}
+{% call page_header("Il tuo profilo", current_user.email) %}{% endcall %}
+<div class="row g-3">
+  <div class="col-12 col-lg-4">
+    <div class="card lt-card">
+      <div class="card-body text-center">
+        {{ avatar(profile, 120, 'mb-3') }}
+        <form method="post" action="{{ url_for('profile.upload_avatar') }}" enctype="multipart/form-data" novalidate>
+          {{ avatar_form.hidden_tag() }}
+          <label class="form-label small text-body-secondary" for="{{ avatar_form.avatar.id }}">JPG, PNG, WebP o GIF · max {{ config.MAX_CONTENT_LENGTH // (1024*1024) }} MB</label>
+          {{ avatar_form.avatar(class_='form-control form-control-sm mb-2', accept='image/*') }}
+          <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-upload"></i> Carica foto</button>
+        </form>
+        {% if profile.avatar_filename %}
+          <div class="mt-2">{{ post_button(url_for('profile.remove_avatar'), 'Rimuovi foto', icon='trash', btn_class='btn-sm btn-link text-danger', confirm='Rimuovere la foto profilo?') }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card lt-card mt-3">
+      <div class="card-header fw-semibold">Le tue famiglie</div>
+      <ul class="list-group list-group-flush">
+        {% for m in memberships %}
+          <li class="list-group-item d-flex align-items-center">
+            <span class="flex-fill">{{ m.family.name }}</span>
+            <span class="badge rounded-pill lt-role-{{ m.role }}">{{ m.role_label }}</span>
+          </li>
+        {% else %}
+          <li class="list-group-item text-body-secondary">Nessuna famiglia. <a href="{{ url_for('family.welcome') }}">Crea o unisciti</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-12 col-lg-8">
+    <div class="card lt-card">
+      <div class="card-header fw-semibold">Dati personali</div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          {{ field(form.display_name) }}
+          <div class="row">
+            {{ field(form.birth_date, class_='col-sm-8') }}
+            {{ field(form.color, class_='col-sm-4') }}
+          </div>
+          {{ field(form.bio) }}
+          <button class="btn btn-primary" type="submit">Salva profilo</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

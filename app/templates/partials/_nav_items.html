@@ -1,0 +1,14 @@
+{# Voci del menu principale. Ogni fase aggiunge qui le proprie voci, solo quando sono funzionanti. #}
+{% set ep = request.endpoint or '' %}
+<a class="nav-link {{ 'active' if ep == 'main.home' }}" href="{{ url_for('main.home') }}"><i class="bi bi-house"></i> Home</a>
+<div class="lt-nav-section">Famiglia</div>
+<a class="nav-link {{ 'active' if ep in ('family.overview', 'family.add_dependent', 'family.edit_dependent') }}" href="{{ url_for('family.overview') }}"><i class="bi bi-people"></i> Membri</a>
+{% if current_membership and current_membership.is_admin %}
+<a class="nav-link {{ 'active' if ep == 'family.invitations' }}" href="{{ url_for('family.invitations') }}"><i class="bi bi-envelope-plus"></i> Inviti</a>
+<a class="nav-link {{ 'active' if ep == 'family.audit_log' }}" href="{{ url_for('family.audit_log') }}"><i class="bi bi-clock-history"></i> Registro attività</a>
+<a class="nav-link {{ 'active' if ep == 'family.settings' }}" href="{{ url_for('family.settings') }}"><i class="bi bi-sliders"></i> Impostazioni famiglia</a>
+{% endif %}
+<div class="lt-nav-section">Account</div>
+<a class="nav-link {{ 'active' if ep == 'profile.edit' }}" href="{{ url_for('profile.edit') }}"><i class="bi bi-person-circle"></i> Profilo</a>
+<a class="nav-link {{ 'active' if ep == 'profile.change_password' }}" href="{{ url_for('profile.change_password') }}"><i class="bi bi-shield-lock"></i> Sicurezza</a>
+<a class="nav-link {{ 'active' if ep == 'profile.preferences' }}" href="{{ url_for('profile.preferences') }}"><i class="bi bi-gear"></i> Preferenze</a>

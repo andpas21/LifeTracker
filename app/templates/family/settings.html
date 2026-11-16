@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field, page_header %}
+{% block title %}Impostazioni famiglia{% endblock %}
+{% block content %}
+{% call page_header("Impostazioni famiglia", family.name) %}{% endcall %}
+<div class="row g-3">
+  <div class="col-12 col-lg-6">
+    <div class="card lt-card">
+      <div class="card-header fw-semibold">Dati della famiglia</div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {{ rename_form.hidden_tag() }}
+          {{ field(rename_form.name) }}
+          <p class="small text-body-secondary">Fuso orario: <strong>{{ family.timezone }}</strong></p>
+          <button class="btn btn-primary" type="submit" name="submit" value="1">Salva</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="card lt-card border-danger-subtle">
+      <div class="card-header fw-semibold text-danger">Zona pericolosa</div>
+      <div class="card-body">
+        <p class="small">L'eliminazione cancella definitivamente la famiglia, i profili dipendenti e tutti i dati della famiglia. Gli account dei membri restano attivi.</p>
+        <form method="post" action="{{ url_for('family.delete') }}" novalidate data-confirm="Eliminare definitivamente la famiglia {{ family.name }}?">
+          {{ delete_form.hidden_tag() }}
+          {{ field(delete_form.confirm_name) }}
+          <button class="btn btn-danger" type="submit"><i class="bi bi-trash"></i> Elimina definitivamente</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

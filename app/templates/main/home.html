@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import avatar, page_header %}
+{% block title %}Home{% endblock %}
+{% block content %}
+{% call page_header("Ciao, " ~ current_user.display_name.split()[0] ~ "!", "Famiglia attiva: " ~ membership.family.name) %}{% endcall %}
+
+<div class="row g-3">
+  <div class="col-12 col-xl-8">
+    <div class="card lt-card h-100">
+      <div class="card-header d-flex align-items-center">
+        <span class="fw-semibold"><i class="bi bi-people"></i> Componenti della famiglia</span>
+        <a class="btn btn-sm btn-outline-primary ms-auto" href="{{ url_for('family.overview') }}">Gestisci</a>
+      </div>
+      <div class="card-body">
+        <div class="lt-member-grid">
+          {% for m in members %}
+            <div class="lt-member-tile">
+              {{ avatar(m.profile, 56) }}
+              <div class="fw-semibold text-truncate mt-2">{{ m.profile.display_name }}</div>
+              <span class="badge rounded-pill lt-role-{{ m.role }}">{{ m.role_label }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-xl-4">
+    <div class="card lt-card h-100">
+      <div class="card-header fw-semibold"><i class="bi bi-lightning-charge"></i> Azioni rapide</div>
+      <div class="list-group list-group-flush">
+        <a class="list-group-item list-group-item-action" href="{{ url_for('profile.edit') }}"><i class="bi bi-person-circle me-2"></i>Completa il tuo profilo</a>
+        {% if membership.is_admin %}
+          <a class="list-group-item list-group-item-action" href="{{ url_for('family.invitations') }}"><i class="bi bi-envelope-plus me-2"></i>Invita un familiare</a>
+          <a class="list-group-item list-group-item-action" href="{{ url_for('family.add_dependent') }}"><i class="bi bi-person-plus me-2"></i>Aggiungi un profilo dipendente</a>
+        {% endif %}
+        <a class="list-group-item list-group-item-action" href="{{ url_for('family.welcome') }}"><i class="bi bi-house-add me-2"></i>Crea o unisciti a un'altra famiglia</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}Registrati{% endblock %}
+{% block auth_content %}
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+  {{ field(form.display_name) }}
+  {{ field(form.email) }}
+  {{ field(form.password) }}
+  {{ field(form.confirm) }}
+  {{ field(form.invite_code, help=('Se hai ricevuto un codice d\'invito inseriscilo qui per entrare subito nella famiglia.' if allow_open else 'Obbligatorio: chiedilo all\'amministratore della tua famiglia.')) }}
+  <button type="submit" class="btn btn-primary w-100 btn-lg">Crea account</button>
+</form>
+<p class="text-center small mt-4 mb-0">Hai già un account? <a href="{{ url_for('auth.login') }}">Accedi</a></p>
+{% endblock %}

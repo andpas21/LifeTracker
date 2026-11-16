@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% macro body() %}
+<div class="text-center py-5">
+  <div class="display-4 fw-bold text-body-tertiary">{{ code }}</div>
+  <h1 class="h4 mt-2">{{ title }}</h1>
+  <p class="text-body-secondary">{{ text }}</p>
+  <a href="{{ url_for('main.home') }}" class="btn btn-primary"><i class="bi bi-house"></i> Torna alla home</a>
+</div>
+{% endmacro %}
+{% block content %}{{ body() }}{% endblock %}
+{% block auth_content %}{{ body() }}{% endblock %}

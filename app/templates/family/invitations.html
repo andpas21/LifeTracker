@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field, page_header, post_button %}
+{% block title %}Inviti{% endblock %}
+{% block content %}
+{% call page_header("Inviti", "Invita i familiari con un codice monouso.") %}{% endcall %}
+
+{% if new_code %}
+<div class="card lt-card border-success mb-4">
+  <div class="card-body">
+    <h2 class="h6 text-success"><i class="bi bi-check-circle"></i> Codice creato</h2>
+    <p class="small mb-2">Copialo ora: per sicurezza non sarà più visibile. Invialo al familiare insieme al link.</p>
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+      <code class="lt-invite-code" id="ltInviteCode">{{ new_code }}</code>
+      <button class="btn btn-sm btn-outline-secondary" type="button" data-copy="#ltInviteCode"><i class="bi bi-clipboard"></i> Copia codice</button>
+    </div>
+    <div class="input-group input-group-sm">
+      <input class="form-control" id="ltInviteLink" value="{{ new_link }}" readonly>
+      <button class="btn btn-outline-secondary" type="button" data-copy="#ltInviteLink"><i class="bi bi-link-45deg"></i> Copia link</button>
+      <button class="btn btn-outline-primary d-none" type="button" data-share-url="{{ new_link }}" data-share-text="Unisciti alla nostra famiglia su LifeTracker. Codice: {{ new_code }}"><i class="bi bi-share"></i> Condividi</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-12 col-lg-4">
+    <div class="card lt-card">
+      <div class="card-header fw-semibold">Nuovo invito</div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          {{ field(form.role) }}
+          {{ field(form.valid_days) }}
+          {{ field(form.note) }}
+          <button class="btn btn-primary w-100" type="submit"><i class="bi bi-key"></i> Genera codice</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-8">
+    <div class="card lt-card">
+      <div class="card-header fw-semibold">Inviti creati</div>
+      {% if invitations %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Creato</th><th>Ruolo</th><th>Nota</th><th>Scadenza</th><th>Stato</th><th></th></tr></thead>
+          <tbody>
+          {% for inv in invitations %}
+            <tr>
+              <td class="small">{{ inv.created_at|localdt }}<br><span class="text-body-secondary">{{ inv.created_by.display_name if inv.created_by else '—' }}</span></td>
+              <td>{{ inv.role_label }}</td>
+              <td class="small">{{ inv.note or '—' }}</td>
+              <td class="small">{{ inv.expires_at|localdt }}</td>
+              <td>
+                <span class="badge lt-status-{{ inv.status }}">{{ inv.status_label }}</span>
+                {% if inv.accepted_by %}<div class="small text-body-secondary">da {{ inv.accepted_by.display_name }}</div>{% endif %}
+              </td>
+              <td class="text-end">
+                {% if inv.status == 'pending' %}
+                  {{ post_button(url_for('family.revoke_invitation', invitation_id=inv.id), 'Revoca', btn_class='btn-sm btn-outline-danger', confirm='Revocare questo invito?') }}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="card-body text-body-secondary">Nessun invito creato finora.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

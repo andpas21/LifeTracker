@@ -1,0 +1,63 @@
+{# Macro riutilizzabili in tutti i template #}
+
+{% macro avatar(profile, size=40, extra_class='') -%}
+  {%- if profile and profile.avatar_filename -%}
+    <img src="{{ url_for('profile.avatar', profile_id=profile.id, v=profile.avatar_filename[:8]) }}" alt="{{ profile.display_name }}"
+         class="lt-avatar {{ extra_class }}" width="{{ size }}" height="{{ size }}" loading="lazy">
+  {%- else -%}
+    <span class="lt-avatar lt-avatar-initials {{ extra_class }}" aria-hidden="true"
+          style="--lt-size: {{ size }}px; --lt-color: {{ profile.color if profile else '#64748b' }}">{{ profile.initials if profile else '?' }}</span>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro field(f, class_='', help=None, floating=False) -%}
+  {%- set has_error = f.errors|length > 0 -%}
+  {%- if f.type == 'BooleanField' -%}
+    <div class="form-check mb-3">
+      {{ f(class_='form-check-input' ~ (' is-invalid' if has_error else '')) }}
+      {{ f.label(class_='form-check-label') }}
+      {% for e in f.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+    </div>
+  {%- elif f.type == 'RadioField' -%}
+    <fieldset class="mb-3">
+      <legend class="form-label fs-6">{{ f.label.text }}</legend>
+      {% for sub in f %}
+        <div class="form-check">{{ sub(class_='form-check-input') }} {{ sub.label(class_='form-check-label') }}</div>
+      {% endfor %}
+      {% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </fieldset>
+  {%- else -%}
+    <div class="mb-3 {{ class_ }}">
+      {{ f.label(class_='form-label') }}
+      {%- if f.type == 'SelectField' -%}
+        {{ f(class_='form-select' ~ (' is-invalid' if has_error else '')) }}
+      {%- elif f.render_kw and f.render_kw.get('type') == 'color' -%}
+        {{ f(class_='form-control form-control-color' ~ (' is-invalid' if has_error else '')) }}
+      {%- elif f.type == 'FileField' -%}
+        {{ f(class_='form-control' ~ (' is-invalid' if has_error else ''), accept='image/*') }}
+      {%- else -%}
+        {{ f(class_='form-control' ~ (' is-invalid' if has_error else '')) }}
+      {%- endif -%}
+      {% for e in f.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+      {% if help or f.description %}<div class="form-text">{{ help or f.description }}</div>{% endif %}
+    </div>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro post_button(action, label, icon=None, btn_class='btn-outline-secondary', confirm=None, extra_fields=None, title=None) -%}
+  <form method="post" action="{{ action }}" class="d-inline" {% if confirm %}data-confirm="{{ confirm }}"{% endif %}>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if extra_fields %}{% for k, v in extra_fields.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}{% endif %}
+    <button type="submit" class="btn {{ btn_class }}"{% if title %} title="{{ title }}" aria-label="{{ title }}"{% endif %}>{% if icon %}<i class="bi bi-{{ icon }}"></i>{% endif %}{% if label %} {{ label }}{% endif %}</button>
+  </form>
+{%- endmacro %}
+
+{% macro page_header(title, subtitle=None) -%}
+  <div class="lt-page-header d-flex flex-wrap align-items-center gap-2 mb-4">
+    <div class="flex-fill">
+      <h1 class="h3 mb-0">{{ title }}</h1>
+      {% if subtitle %}<p class="text-body-secondary mb-0">{{ subtitle }}</p>{% endif %}
+    </div>
+    {{ caller() if caller }}
+  </div>
+{%- endmacro %}

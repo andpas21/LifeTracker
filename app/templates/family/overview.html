@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import avatar, page_header, post_button %}
+{% block title %}Famiglia{% endblock %}
+{% block content %}
+{% call page_header(family.name, members|length ~ " componenti") %}
+  {% if membership.is_admin %}
+    <a class="btn btn-outline-primary" href="{{ url_for('family.invitations') }}"><i class="bi bi-envelope-plus"></i> Invita</a>
+    <a class="btn btn-primary" href="{{ url_for('family.add_dependent') }}"><i class="bi bi-person-plus"></i> Profilo dipendente</a>
+  {% endif %}
+{% endcall %}
+
+<div class="card lt-card">
+  <ul class="list-group list-group-flush">
+    {% for m in members %}
+      <li class="list-group-item lt-member-row">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          {{ avatar(m.profile, 48) }}
+          <div class="flex-fill min-w-0">
+            <div class="fw-semibold">
+              {{ m.profile.display_name }}
+              {% if m.profile.id == current_user.profile.id %}<span class="badge text-bg-light border">tu</span>{% endif %}
+            </div>
+            <div class="small text-body-secondary">
+              <span class="badge rounded-pill lt-role-{{ m.role }}">{{ m.role_label }}</span>
+              {% if m.profile.user %}· {{ m.profile.user.email }}{% endif %}
+              {% if m.profile.birth_date %}· nato/a il {{ m.profile.birth_date|datefmt }}{% endif %}
+              · nella famiglia dal {{ m.joined_at|localdt('%d/%m/%Y') }}
+            </div>
+          </div>
+          {% if membership.is_admin and m.id != membership.id %}
+            <div class="d-flex gap-2 flex-wrap">
+              {% if m.role == 'dependent' %}
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('family.edit_dependent', profile_id=m.profile_id) }}"><i class="bi bi-pencil"></i> Modifica</a>
+              {% else %}
+                <form method="post" action="{{ url_for('family.change_role', member_id=m.id) }}" class="d-flex gap-1">
+                  {{ role_form.hidden_tag() }}
+                  <select name="role" class="form-select form-select-sm" aria-label="Ruolo di {{ m.profile.display_name }}">
+                    <option value="member" {{ 'selected' if m.role == 'member' }}>Membro</option>
+                    <option value="admin" {{ 'selected' if m.role == 'admin' }}>Amministratore</option>
+                  </select>
+                  <button class="btn btn-sm btn-outline-primary" type="submit" title="Aggiorna ruolo"><i class="bi bi-check-lg"></i></button>
+                </form>
+              {% endif %}
+              {{ post_button(url_for('family.remove_member', member_id=m.id), None, icon='person-dash', btn_class='btn-sm btn-outline-danger', title='Rimuovi dalla famiglia',
+                             confirm=('Eliminare il profilo di ' ~ m.profile.display_name ~ '?' if m.role == 'dependent' else 'Rimuovere ' ~ m.profile.display_name ~ ' dalla famiglia?')) }}
+            </div>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="d-flex flex-wrap gap-2 mt-4">
+  {{ post_button(url_for('family.leave'), 'Lascia la famiglia', icon='box-arrow-left', btn_class='btn-outline-danger',
+                 confirm='Vuoi davvero lasciare la famiglia ' ~ family.name ~ '?') }}
+</div>
+{% endblock %}

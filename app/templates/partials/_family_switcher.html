@@ -1,0 +1,25 @@
+{# Selettore della famiglia attiva (visibile solo con più famiglie). #}
+{% if current_family %}
+  {% if user_memberships|length > 1 %}
+    <div class="dropdown lt-family-switcher">
+      <button class="btn btn-sm w-100 text-start dropdown-toggle lt-family-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-house-heart"></i> <span class="text-truncate">{{ current_family.name }}</span>
+      </button>
+      <ul class="dropdown-menu w-100">
+        {% for m in user_memberships %}
+          <li>
+            <form method="post" action="{{ url_for('family.switch', family_id=m.family_id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <button class="dropdown-item {{ 'active' if m.family_id == current_family.id }}" type="submit">{{ m.family.name }}</button>
+            </form>
+          </li>
+        {% endfor %}
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="{{ url_for('family.welcome') }}"><i class="bi bi-plus-lg"></i> Crea o unisciti</a></li>
+      </ul>
+    </div>
+  {% else %}
+    <div class="lt-family-btn small"><i class="bi bi-house-heart"></i> {{ current_family.name }}</div>
+  {% endif %}
+{% endif %}

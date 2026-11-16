@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field, page_header %}
+{% block title %}Preferenze{% endblock %}
+{% block content %}
+{% call page_header("Preferenze") %}{% endcall %}
+<div class="card lt-card lt-narrow">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ field(form.theme) }}
+      <button class="btn btn-primary" type="submit">Salva preferenze</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

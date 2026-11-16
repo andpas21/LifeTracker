@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field, page_header %}
+{% block title %}Unisciti a una famiglia{% endblock %}
+{% block content %}
+{% call page_header("Unisciti a una famiglia") %}{% endcall %}
+<div class="card lt-card lt-narrow">
+  <div class="card-body">
+    {% if invitation %}
+      <div class="alert alert-primary">
+        Sei stato invitato nella famiglia <strong>{{ invitation.family.name }}</strong> con ruolo <strong>{{ invitation.role_label }}</strong>.
+      </div>
+    {% endif %}
+    <form method="post" action="{{ url_for('family.join') }}" novalidate>
+      {{ form.hidden_tag() }}
+      {{ field(form.code) }}
+      <button class="btn btn-primary" type="submit"><i class="bi bi-box-arrow-in-right"></i> Unisciti</button>
+      <a class="btn btn-link" href="{{ url_for('family.welcome') }}">Annulla</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

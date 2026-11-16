@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field, page_header %}
+{% block title %}Benvenuto{% endblock %}
+{% block content %}
+{% call page_header("Benvenuto in LifeTracker", "Per iniziare crea una famiglia oppure unisciti a una famiglia esistente.") %}{% endcall %}
+
+{% if memberships %}
+<div class="alert alert-info">Fai già parte di {{ memberships|length }} famiglia/e. Puoi crearne o raggiungerne un'altra.</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-12 col-md-6">
+    <div class="card lt-card h-100">
+      <div class="card-body">
+        <div class="lt-icon-badge mb-3"><i class="bi bi-house-add"></i></div>
+        <h2 class="h5">Crea una nuova famiglia</h2>
+        <p class="text-body-secondary small">Diventerai amministratore: potrai invitare gli altri componenti e creare profili per i bambini.</p>
+        <form method="post" action="{{ url_for('family.create') }}" novalidate>
+          {{ create_form.hidden_tag() }}
+          {{ field(create_form.name) }}
+          <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Crea famiglia</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="card lt-card h-100">
+      <div class="card-body">
+        <div class="lt-icon-badge mb-3"><i class="bi bi-key"></i></div>
+        <h2 class="h5">Unisciti con un codice</h2>
+        <p class="text-body-secondary small">Inserisci il codice d'invito ricevuto dall'amministratore della famiglia (es. ABCDE-FGH23).</p>
+        <form method="post" action="{{ url_for('family.join') }}" novalidate>
+          {{ join_form.hidden_tag() }}
+          {{ field(join_form.code) }}
+          <button class="btn btn-outline-primary" type="submit"><i class="bi bi-box-arrow-in-right"></i> Unisciti</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
