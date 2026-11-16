@@ -162,7 +162,7 @@ def evaluate(goal: Goal, today: date | None = None) -> Progress:
     progress = compute(goal, today)
     if goal.status != "active":
         return progress
-    link = url_for("goals.detail", goal_id=goal.id) if _has_request() else None
+    link = f"/obiettivi/{goal.id}"
     recipients = _recipients(goal)
     if progress.pct >= 50 and _add_event(goal, "progress_50", progress.period_key, progress.value):
         notify(recipients, family_id=goal.family_id, type="goal", title=f"A metà strada: {goal.title}",

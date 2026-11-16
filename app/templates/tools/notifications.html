@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header, post_button, empty_state %}
+{% block title %}Notifiche{% endblock %}
+{% block content %}
+{% call page_header("Notifiche") %}
+  {% if items %}
+    {{ post_button(url_for('tools.mark_all_read'), 'Segna tutte come lette', icon='check2-all') }}
+    {{ post_button(url_for('tools.clear_read'), 'Elimina lette', icon='trash', btn_class='btn-outline-danger', confirm='Eliminare le notifiche già lette?') }}
+  {% endif %}
+{% endcall %}
+<div class="card lt-card">
+  {% if items %}
+    <ul class="list-group list-group-flush">
+      {% for n in items %}
+        <li class="list-group-item {{ 'lt-unread' if not n.is_read }}">
+          <form method="post" action="{{ url_for('tools.open_notification', notification_id=n.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-link text-start text-decoration-none text-body w-100 p-0 d-flex gap-3 align-items-start">
+              <span class="lt-icon-badge flex-shrink-0"><i class="bi bi-{{ n.icon }}"></i></span>
+              <span class="flex-fill min-w-0">
+                <span class="d-block fw-semibold">{{ n.title }}</span>
+                {% if n.body %}<span class="d-block small text-body-secondary">{{ n.body }}</span>{% endif %}
+                <span class="d-block small text-body-tertiary">{{ n.created_at|localdt }}</span>
+              </span>
+              {% if not n.is_read %}<span class="lt-dot" aria-label="Non letta"></span>{% endif %}
+            </button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    {% call empty_state('bell-slash', 'Nessuna notifica', 'Qui troverai promemoria, obiettivi raggiunti e riepiloghi periodici.') %}{% endcall %}
+  {% endif %}
+</div>
+{% endblock %}

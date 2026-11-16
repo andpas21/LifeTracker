@@ -53,6 +53,41 @@ def register_cli(app: Flask) -> None:
         db.session.commit()
         click.echo(f"Account {user.email} sbloccato.")
 
+    @lt.command("backup")
+    def backup():
+        """Crea subito un backup (database + file caricati) in instance/backups."""
+        from app.services import backup_service
+
+        path = backup_service.create_backup()
+        click.echo(f"Backup creato: {path}")
+
+    @lt.command("restore")
+    @click.argument("archive", type=click.Path(exists=True, dir_okay=False))
+    @click.confirmation_option(prompt="Il database attuale verrà sovrascritto. Continuare?")
+    def restore(archive):
+        """Ripristina un backup .zip (fermare prima il servizio: sudo systemctl stop lifetracker)."""
+        from app.services import backup_service
+
+        backup_service.restore_backup(archive)
+        click.echo("Ripristino completato. Esegui 'flask db upgrade' e riavvia il servizio.")
+
+    @lt.command("run-scheduled")
+    def run_scheduled():
+        """Attività periodiche (eseguite dal timer systemd ogni 5 minuti):
+        promemoria, scadenze degli obiettivi, riepiloghi, backup giornaliero."""
+        from app.services import backup_service, goal_service, reminder_service, summary_service
+
+        reminders = reminder_service.run_due()
+        families = goal_service.evaluate_all()
+        summaries = summary_service.send_due_summaries()
+        made_backup = ""
+        try:
+            if backup_service.backup_due():
+                made_backup = backup_service.create_backup()
+        except RuntimeError as exc:  # es. PostgreSQL
+            made_backup = f"saltato ({exc})"
+        click.echo(f"promemoria={reminders} famiglie_obiettivi={families} riepiloghi={summaries} backup={made_backup or 'non necessario'}")
+
     @lt.command("users")
     def list_users():
         """Elenca gli account registrati."""

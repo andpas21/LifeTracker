@@ -1,0 +1,20 @@
+{% from "partials/_macros.html" import field %}
+{{ form.hidden_tag() }}
+{{ field(form.title) }}
+{{ field(form.message) }}
+{{ field(form.activity_id) }}
+<div class="row">
+  {{ field(form.frequency, class_='col-sm-6') }}
+  {{ field(form.time_of_day, class_='col-sm-6') }}
+</div>
+{{ field(form.start_date) }}
+<fieldset class="mb-3" data-freq="weekly">
+  <legend class="form-label fs-6">Giorni della settimana</legend>
+  <div class="d-flex flex-wrap gap-2">
+    {% for value, label in form.weekdays.choices %}
+      <input type="checkbox" class="btn-check" name="weekdays" id="wd{{ value }}" value="{{ value }}" {{ 'checked' if form.weekdays.data and value in form.weekdays.data }}>
+      <label class="btn btn-sm btn-outline-secondary rounded-pill" for="wd{{ value }}">{{ label[:3] }}</label>
+    {% endfor %}
+  </div>
+</fieldset>
+<div data-freq="monthly">{{ field(form.day_of_month, help='Se il mese è più corto, l\'ultimo giorno del mese.') }}</div>

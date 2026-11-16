@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header %}
+{% block title %}Modifica promemoria{% endblock %}
+{% block content %}
+{% call page_header("Modifica promemoria") %}{% endcall %}
+<div class="card lt-card lt-narrow"><div class="card-body">
+  <form method="post" novalidate data-reminder-form>
+    {% include "tools/_reminder_fields.html" %}
+    <button class="btn btn-primary" type="submit">Salva</button>
+    <a class="btn btn-link" href="{{ url_for('tools.reminders') }}">Annulla</a>
+  </form>
+</div></div>
+{% endblock %}

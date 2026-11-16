@@ -7,6 +7,11 @@
 <a class="nav-link {{ 'active' if ep.startswith('dashboard.') }}" href="{{ url_for('dashboard.personal') }}"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
 <a class="nav-link {{ 'active' if ep.startswith('calendar.') }}" href="{{ url_for('calendar.index') }}"><i class="bi bi-calendar3"></i> Calendario</a>
 <a class="nav-link {{ 'active' if ep.startswith('goals.') }}" href="{{ url_for('goals.index') }}"><i class="bi bi-trophy"></i> Obiettivi</a>
+<a class="nav-link {{ 'active' if ep in ('tools.summaries',) }}" href="{{ url_for('tools.summaries') }}"><i class="bi bi-clipboard-data"></i> Riepiloghi</a>
+<div class="lt-nav-section">Strumenti</div>
+<a class="nav-link {{ 'active' if ep == 'tools.notifications' }}" href="{{ url_for('tools.notifications') }}"><i class="bi bi-bell"></i> Notifiche{% if unread_notifications %}<span class="badge rounded-pill text-bg-danger ms-auto" data-unread-badge>{{ unread_notifications }}</span>{% endif %}</a>
+<a class="nav-link {{ 'active' if ep in ('tools.reminders', 'tools.edit_reminder') }}" href="{{ url_for('tools.reminders') }}"><i class="bi bi-alarm"></i> Promemoria</a>
+<a class="nav-link {{ 'active' if ep == 'tools.export' }}" href="{{ url_for('tools.export') }}"><i class="bi bi-file-earmark-spreadsheet"></i> Esporta dati</a>
 <div class="lt-nav-section">Configurazione</div>
 <a class="nav-link {{ 'active' if ep.startswith('catalog.') }}" href="{{ url_for('catalog.index') }}"><i class="bi bi-grid"></i> Catalogo</a>
 <div class="lt-nav-section">Famiglia</div>

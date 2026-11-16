@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header %}
+{% from "dashboard/_macros.html" import kpi_tile %}
+{% block title %}Riepilogo{% endblock %}
+{% block content %}
+{% call page_header("Riepilogo " ~ ('del mese' if kind == 'month' else 'della settimana'), s.period.label) %}
+  <div class="btn-group btn-group-sm">
+    <a class="btn btn-outline-secondary" href="{{ url_for('tools.summaries', tipo=tipo, rif=s.period.previous().start.isoformat()) }}" aria-label="Precedente" title="Precedente"><i class="bi bi-chevron-left"></i></a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('tools.summaries', tipo=tipo, rif=s.period.next().start.isoformat()) }}" aria-label="Successivo" title="Successivo"><i class="bi bi-chevron-right"></i></a>
+  </div>
+  <div class="btn-group btn-group-sm">
+    <a class="btn {{ 'btn-primary' if kind == 'week' else 'btn-outline-primary' }}" href="{{ url_for('tools.summaries', tipo='settimana') }}">Settimana</a>
+    <a class="btn {{ 'btn-primary' if kind == 'month' else 'btn-outline-primary' }}" href="{{ url_for('tools.summaries', tipo='mese') }}">Mese</a>
+  </div>
+{% endcall %}
+<div class="lt-kpi-grid lt-kpi-grid-4 mb-3">
+  {{ kpi_tile('Le mie registrazioni', s.my_count, ('%+d%% rispetto a prima'|format(s.delta)) if s.delta is not none else 'periodo precedente: ' ~ s.my_prev, 'journal-check') }}
+  {{ kpi_tile('Tempo dedicato', s.my_time, 'giorni attivi: ' ~ s.my_days, 'stopwatch') }}
+  {{ kpi_tile('Famiglia', s.family_count, 'registrazioni · ' ~ s.family_time, 'people') }}
+  {{ kpi_tile('Attività condivise', s.shared, 'ambito familiare', 'heart') }}
+</div>
+<div class="row g-3">
+  <div class="col-12 col-lg-6">
+    <div class="card lt-card h-100"><div class="card-header fw-semibold">Le mie attività</div><div class="card-body">
+      {% for label, color, value in s.my_activities %}
+        {% set max = s.my_activities[0][2] or 1 %}
+        <div class="mb-2"><div class="d-flex small"><span class="flex-fill">{{ label }}</span><strong>{{ value|int }}</strong></div>
+          <div class="progress lt-progress"><div class="progress-bar" style="width: {{ (value / max * 100)|round }}%; background: {{ color }}"></div></div></div>
+      {% else %}<p class="small text-body-secondary mb-0">Nessuna registrazione nel periodo.</p>{% endfor %}
+    </div></div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="card lt-card mb-3"><div class="card-header fw-semibold">La famiglia</div><div class="card-body">
+      {% for label, color, value in s.family_members %}
+        <div class="d-flex align-items-center gap-2 small mb-1"><span class="lt-swatch" style="--lt-color: {{ color }}"></span><span class="flex-fill">{{ label }}</span><strong>{{ value|int }}</strong></div>
+      {% else %}<p class="small text-body-secondary mb-0">Nessuna registrazione.</p>{% endfor %}
+    </div></div>
+    <div class="card lt-card"><div class="card-header fw-semibold"><i class="bi bi-trophy"></i> Obiettivi raggiunti</div><div class="card-body">
+      {% for ev in s.goals_completed %}
+        <div class="small mb-1"><i class="bi bi-check-circle-fill text-success"></i> <a href="{{ url_for('goals.detail', goal_id=ev.goal_id) }}">{{ ev.goal.title }}</a></div>
+      {% else %}<p class="small text-body-secondary mb-0">Nessun obiettivo raggiunto nel periodo.</p>{% endfor %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}

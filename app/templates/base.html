@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#4f46e5">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>{% block title %}{{ app_name }}{% endblock %} · {{ app_name }}</title>
+  <title>{% if unread_notifications %}({{ unread_notifications }}) {% endif %}{% block title %}{{ app_name }}{% endblock %} · {{ app_name }}</title>
   <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   <link rel="manifest" href="{{ url_for('main.manifest') }}">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
@@ -55,6 +55,9 @@
       <div class="fw-semibold text-truncate">{% block mobile_title %}{{ self.title() }}{% endblock %}</div>
       {% if current_family %}<div class="small text-body-secondary text-truncate">{{ current_family.name }}</div>{% endif %}
     </div>
+    <a class="btn btn-link text-body p-1 position-relative me-1" href="{{ url_for('tools.notifications') }}" aria-label="Notifiche">
+      <i class="bi bi-bell fs-4"></i>{% if unread_notifications %}<span class="lt-bell-badge">{{ unread_notifications }}</span>{% endif %}
+    </a>
     <button class="btn btn-link text-body p-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#ltMobileMenu" aria-label="Menu">
       {{ avatar(current_user.profile, 34) }}
     </button>

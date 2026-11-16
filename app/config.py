@@ -51,6 +51,8 @@ class BaseConfig:
     # Cartelle (relative a instance_path se non assolute)
     UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", "uploads")
     LOG_FOLDER = os.environ.get("LOG_FOLDER", "logs")
+    BACKUP_FOLDER = os.environ.get("BACKUP_FOLDER", "backups")
+    BACKUP_KEEP = int(os.environ.get("BACKUP_KEEP", "14"))
 
 
 class DevelopmentConfig(BaseConfig):

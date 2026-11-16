@@ -141,6 +141,18 @@
     el.addEventListener("change", function () { el.form.submit(); });
   });
 
+  // Form promemoria: giorni della settimana / del mese solo per la frequenza corrispondente.
+  document.querySelectorAll("[data-reminder-form]").forEach(function (form) {
+    var select = form.querySelector('[name="frequency"]');
+    var update = function () {
+      form.querySelectorAll("[data-freq]").forEach(function (el) {
+        el.classList.toggle("d-none", el.getAttribute("data-freq") !== select.value);
+      });
+    };
+    select.addEventListener("change", update);
+    update();
+  });
+
   // Gli avvisi di successo/informazione si chiudono da soli.
   document.querySelectorAll(".lt-flashes .alert-success, .lt-flashes .alert-info").forEach(function (alert) {
     setTimeout(function () {

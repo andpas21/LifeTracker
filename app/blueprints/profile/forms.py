@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField, FileRequired
-from wtforms import DateField, PasswordField, RadioField, StringField, SubmitField, TextAreaField
+from wtforms import BooleanField, DateField, PasswordField, RadioField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, EqualTo, Length, Optional
 
 from app.services.auth_service import MIN_PASSWORD_LENGTH
@@ -43,4 +43,7 @@ class PreferencesForm(FlaskForm):
         choices=[("auto", "Automatico (come il dispositivo)"), ("light", "Chiaro"), ("dark", "Scuro")],
         default="auto",
     )
+    weekly_summary = BooleanField("Riepilogo settimanale (ogni lunedì)")
+    monthly_summary = BooleanField("Riepilogo mensile (il primo del mese)")
+    goal_notifications = BooleanField("Notifiche sugli obiettivi (metà strada, raggiunto, scaduto)")
     submit = SubmitField("Salva preferenze")

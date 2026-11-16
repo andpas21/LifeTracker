@@ -95,8 +95,11 @@ def change_password():
 @bp.route("/preferenze", methods=["GET", "POST"])
 @login_required
 def preferences():
-    form = PreferencesForm(theme=current_user.theme)
+    form = PreferencesForm(obj=current_user)
     if form.validate_on_submit():
+        current_user.weekly_summary = form.weekly_summary.data
+        current_user.monthly_summary = form.monthly_summary.data
+        current_user.goal_notifications = form.goal_notifications.data
         auth_service.set_theme(current_user, form.theme.data)
         flash("Preferenze salvate.", "success")
         return redirect(url_for("profile.preferences"))

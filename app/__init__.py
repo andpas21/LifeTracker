@@ -66,8 +66,9 @@ def _register_blueprints(app: Flask) -> None:
     from app.blueprints.family import bp as family_bp
     from app.blueprints.main import bp as main_bp
     from app.blueprints.profile import bp as profile_bp
+    from app.blueprints.tools import bp as tools_bp
 
-    for bp in (main_bp, auth_bp, family_bp, profile_bp, catalog_bp, entries_bp, dashboard_bp, goals_bp, calendar_bp):
+    for bp in (main_bp, auth_bp, family_bp, profile_bp, catalog_bp, entries_bp, dashboard_bp, goals_bp, calendar_bp, tools_bp):
         app.register_blueprint(bp)
 
 
@@ -93,6 +94,7 @@ def _register_template_helpers(app: Flask) -> None:
     from app.models import ROLE_LABELS
     from app.services import family_service
     from app.services.audit_service import action_label
+    from app.services import notification_service
     from app.services.entry_service import format_metric_value
     from app.utils.security import get_current_membership
     from app.utils.timezone import format_local
@@ -142,6 +144,9 @@ def _register_template_helpers(app: Flask) -> None:
             "role_labels": ROLE_LABELS,
             "action_label": action_label,
             "format_metric": format_metric_value,
+            "unread_notifications": notification_service.unread_count(current_user)
+            if current_user.is_authenticated
+            else 0,
         }
 
 

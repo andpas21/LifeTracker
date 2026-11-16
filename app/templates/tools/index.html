@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header %}
+{% block title %}Strumenti{% endblock %}
+{% block content %}
+{% call page_header("Strumenti") %}{% endcall %}
+<div class="row g-3">
+  {% for url, icon, title, text in [
+      (url_for('tools.notifications'), 'bell', 'Notifiche', 'Obiettivi raggiunti, promemoria e riepiloghi.'),
+      (url_for('tools.reminders'), 'alarm', 'Promemoria', 'Ricordati di registrare o di svolgere un\'attività.'),
+      (url_for('tools.summaries'), 'clipboard-data', 'Riepiloghi', 'La tua settimana e il tuo mese in breve.'),
+      (url_for('tools.export'), 'file-earmark-spreadsheet', 'Esporta dati', 'Scarica le registrazioni in Excel o CSV.'),
+      (url_for('catalog.index'), 'grid', 'Catalogo', 'Categorie, attività, indicatori e tag.'),
+      (url_for('profile.preferences'), 'gear', 'Preferenze', 'Tema chiaro/scuro e notifiche.'),
+  ] %}
+    <div class="col-12 col-md-6 col-xl-4">
+      <a class="card lt-card h-100 text-decoration-none text-body lt-tool-card" href="{{ url }}">
+        <div class="card-body d-flex gap-3 align-items-center">
+          <span class="lt-icon-badge"><i class="bi bi-{{ icon }}"></i></span>
+          <div><div class="fw-semibold">{{ title }}</div><div class="small text-body-secondary">{{ text }}</div></div>
+        </div>
+      </a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

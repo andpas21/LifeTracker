@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header, post_button %}
+{% block title %}Promemoria{% endblock %}
+{% block content %}
+{% call page_header("Promemoria", "Arrivano come notifiche in LifeTracker all'ora indicata.") %}{% endcall %}
+<div class="row g-3">
+  <div class="col-12 col-lg-5">
+    <div class="card lt-card"><div class="card-header fw-semibold">Nuovo promemoria</div><div class="card-body">
+      <form method="post" novalidate data-reminder-form>
+        {% include "tools/_reminder_fields.html" %}
+        <button class="btn btn-primary" type="submit">Crea promemoria</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-12 col-lg-7">
+    <div class="card lt-card">
+      {% if reminders %}
+        <ul class="list-group list-group-flush">
+          {% for r in reminders %}
+            <li class="list-group-item d-flex gap-2 align-items-center {{ 'opacity-50' if not r.is_active }}">
+              <span class="lt-icon-badge flex-shrink-0"><i class="bi bi-alarm"></i></span>
+              <div class="flex-fill min-w-0">
+                <div class="fw-semibold">{{ r.title }}</div>
+                <div class="small text-body-secondary">{{ labels[r.frequency] }} alle {{ r.time_of_day.strftime('%H:%M') }}{% if r.activity %} · {{ r.activity.name }}{% endif %}</div>
+                <div class="small text-body-tertiary">{% if r.is_active and r.next_run_at %}Prossimo: {{ r.next_run_at|localdt }}{% else %}Disattivato{% endif %}</div>
+              </div>
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('tools.edit_reminder', reminder_id=r.id) }}" title="Modifica" aria-label="Modifica"><i class="bi bi-pencil"></i></a>
+              {{ post_button(url_for('tools.toggle_reminder', reminder_id=r.id), None, icon=('pause' if r.is_active else 'play'), btn_class='btn-sm btn-outline-secondary', title=('Disattiva' if r.is_active else 'Attiva')) }}
+              {{ post_button(url_for('tools.delete_reminder', reminder_id=r.id), None, icon='trash', btn_class='btn-sm btn-outline-danger', confirm='Eliminare il promemoria?', title='Elimina') }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="card-body text-body-secondary">Nessun promemoria.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

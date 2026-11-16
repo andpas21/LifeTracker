@@ -343,3 +343,13 @@ details > summary::-webkit-details-marker { display: none; }
 @media (min-width: 992px) { .lt-kpi-grid.lt-kpi-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .lt-member-mini { width: 64px; }
 .lt-avatar-add { width: 48px; height: 48px; display: inline-grid; place-items: center; border: 2px dashed var(--lt-border); color: var(--bs-secondary-color); }
+
+/* ---------------------------------------------------------------- strumenti e notifiche */
+.lt-tool-card:hover { border-color: var(--lt-primary); }
+.lt-unread { background: var(--lt-primary-soft) !important; }
+.lt-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--lt-primary); flex-shrink: 0; margin-top: .4rem; }
+.lt-bell-badge {
+  position: absolute; top: 0; right: -2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  background: #dc2626; color: #fff; font-size: .68rem; font-weight: 700; line-height: 18px; text-align: center;
+}
+.lt-nav .nav-link .badge { font-size: .7rem; }

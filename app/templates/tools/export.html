@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field, page_header %}
+{% block title %}Esporta dati{% endblock %}
+{% block content %}
+{% call page_header("Esporta dati", "Scarica le registrazioni visibili a te, con tutti gli indicatori.") %}{% endcall %}
+<div class="card lt-card lt-narrow"><div class="card-body">
+  <form method="get" novalidate>
+    <div class="row">
+      {{ field(form.da, class_='col-6') }}
+      {{ field(form.a, class_='col-6') }}
+    </div>
+    {{ field(form.persona) }}
+    {{ field(form.categoria) }}
+    {{ field(form.attivita) }}
+    {{ field(form.formato) }}
+    <button class="btn btn-primary" type="submit"><i class="bi bi-download"></i> Scarica</button>
+  </form>
+  <p class="small text-body-secondary mt-3 mb-0">Il file Excel contiene anche un foglio di riepilogo per attività e per persona. Il CSV usa il punto e virgola, compatibile con Excel in italiano.</p>
+</div></div>
+{% endblock %}

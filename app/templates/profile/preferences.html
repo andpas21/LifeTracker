@@ -8,6 +8,11 @@
     <form method="post" novalidate>
       {{ form.hidden_tag() }}
       {{ field(form.theme) }}
+      <fieldset class="mb-3"><legend class="form-label fs-6">Notifiche</legend>
+        {{ field(form.weekly_summary) }}
+        {{ field(form.monthly_summary) }}
+        {{ field(form.goal_notifications) }}
+      </fieldset>
       <button class="btn btn-primary" type="submit">Salva preferenze</button>
     </form>
   </div>
