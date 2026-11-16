@@ -13,12 +13,14 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from app.config import CONFIGS
-from app.extensions import csrf, db, login_manager, migrate
+# Il file .env va letto PRIMA di importare la configurazione, che legge le variabili d'ambiente.
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+
+from app.config import CONFIGS  # noqa: E402
+from app.extensions import csrf, db, login_manager, migrate  # noqa: E402
 
 
 def create_app(config_name: str | None = None) -> Flask:
-    load_dotenv()
     config_name = config_name or os.environ.get("FLASK_CONFIG", "production")
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(CONFIGS[config_name])
