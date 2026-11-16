@@ -3,7 +3,7 @@
    - risorse statiche (/static/...): cache-first (cambiano solo con un nuovo deploy → CACHE_VERSION);
    - pagine HTML: sempre dalla rete (dati personali sempre aggiornati); se offline → pagina /offline.
    Nessun dato personale viene salvato in cache. */
-const CACHE_VERSION = "lt-v1";
+const CACHE_VERSION = "lt-v2";
 const PRECACHE = [
   "/offline",
   "/static/css/app.css",

@@ -13,21 +13,30 @@ indicatori (km, minuti, pagine…) e diventa statistiche, grafici, obiettivi e c
 
 | Fase | Contenuto | Stato |
 |---|---|---|
-| 1 | Fondamenta, utenti, famiglie | ✅ completata |
-| 2 | Categorie, attività, indicatori | ⏳ prossima |
-| 3 | Registrazioni e storico | — |
-| 4 | Dashboard e statistiche | — |
-| 5 | Obiettivi e calendario | — |
-| 6 | Funzionalità avanzate | — |
-| 7 | Installazione su Raspberry Pi | — |
+| 1 | Fondamenta, utenti, famiglie | ✅ |
+| 2 | Categorie, attività, indicatori | ✅ |
+| 3 | Registrazioni e storico | ✅ |
+| 4 | Dashboard e statistiche | ✅ |
+| 5 | Obiettivi e calendario | ✅ |
+| 6 | Funzionalità avanzate | ✅ |
+| 7 | Installazione su Raspberry Pi | ✅ |
 
 Dettagli in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+
+## Installazione sul Raspberry Pi
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/andpas21/LifeTracker/claude/lifetracker-project-s2wasa/deploy/install.sh | sudo bash
+```
+
+Guida completa (anche dall'iPhone via Tailscale): [`docs/INSTALLAZIONE_RASPBERRY.md`](docs/INSTALLAZIONE_RASPBERRY.md).
 
 ## Documentazione
 
 - [`docs/ARCHITETTURA.md`](docs/ARCHITETTURA.md) — architettura, modello dati, cartelle, flussi, schermate, sicurezza
 - [`docs/GUIDA_SVILUPPO.md`](docs/GUIDA_SVILUPPO.md) — installazione in locale passo passo, comandi utili, test
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — fasi di sviluppo e funzionalità di ciascuna
+- [`docs/INSTALLAZIONE_RASPBERRY.md`](docs/INSTALLAZIONE_RASPBERRY.md) — installazione, HTTPS con Tailscale, backup, manutenzione
 
 ## Avvio rapido (sviluppo)
 

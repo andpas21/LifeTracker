@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 from app.extensions import db
-from app.models import FamilyMember, GoalEvent, Goal, Profile, User
+from app.models import FamilyMember, Goal, GoalEvent, User
 from app.services import goal_service, stats_service
 from app.services.notification_service import notify
 from app.services.period import Period, period_for

@@ -12,7 +12,7 @@ from app.models import Notification, Reminder
 from app.services import backup_service, catalog_service, entry_service, family_service, reminder_service, \
     summary_service
 from app.services.entry_service import EntryData
-from app.utils.timezone import local_today, to_utc, utcnow
+from app.utils.timezone import local_today, utcnow
 
 
 @pytest.fixture()

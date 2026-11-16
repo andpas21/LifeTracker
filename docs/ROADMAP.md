@@ -24,7 +24,7 @@ Ogni fase si chiude solo dopo verifica: test automatici verdi, prova manuale, do
 - PWA: manifest, icone, service worker (cache solo delle risorse statiche, pagina offline).
 - Sicurezza: CSRF globale, CSP restrittiva, header di sicurezza, pagine di errore, log a rotazione.
 - Comandi CLI: `flask lt users | reset-password | unlock`.
-- 34 test automatici (autenticazione, famiglie, inviti, permessi, isolamento tra famiglie, upload,
+- Test automatici (autenticazione, famiglie, inviti, permessi, isolamento tra famiglie, upload,
   CSRF, header, fuso orario con ora legale, CLI).
 
 **Da verificare manualmente** (checklist)
@@ -33,28 +33,57 @@ Ogni fase si chiude solo dopo verifica: test automatici verdi, prova manuale, do
 3. Cambia ruolo del secondo utente, prova a rimuoverlo, prova "Lascia la famiglia" da admin unico.
 4. Da smartphone: barra inferiore, menu, tema scuro, "Aggiungi a schermata Home".
 
-## Fase 2 — Categorie, attività e indicatori ⏳
-Tabelle `categories` (con sottocategorie), `activities`, `metric_definitions`, `tags`.
-CRUD completo con icone (selettore Bootstrap Icons) e colori; indicatori configurabili
-(tipo di dato, unità, aggregazione, semantica per confronti omogenei, min/max, obbligatorio);
-archiviazione invece della cancellazione quando esistono registrazioni; ordinamento.
+## Fase 2 — Categorie, attività e indicatori ✅
+- Categorie e sottocategorie (due livelli), icone (selettore con anteprima), colori, ordinamento, archiviazione.
+- Attività con etichetta del contatore ("uscite", "sessioni"…), quantità predefinita del +1, ambito predefinito,
+  presenza nella registrazione rapida, colore/icona propri o ereditati.
+- Indicatori configurabili senza codice: tipo (intero, decimale, durata, sì/no, testo), unità, significato
+  (distanza, durata, frequenza cardiaca…), aggregazione (somma, media, max, min), minimo/massimo, obbligatorio.
+- Tag della famiglia. Permessi: creano tutti i membri; modificano amministratori e autori.
+- Gli elementi usati nelle registrazioni non si eliminano: si archiviano.
 
-## Fase 3 — Registrazioni e storico
-`activity_entries`, `entry_participants`, `metric_values`, `entry_tags`, `entry_revisions`, `attachments`.
-Registrazione rapida "+1" (pulsante centrale nella barra mobile), modalità completa, modifica,
-eliminazione logica e ripristino, storico revisioni, elenco filtrabile, allegati e foto.
+## Fase 3 — Registrazioni e storico ✅
+- Registrazione rapida "+1" con un tocco (pulsante centrale su smartphone), anche per i profili dipendenti,
+  con notifica e link "aggiungi dettagli".
+- Modalità completa: persona, data/ora, quantità, indicatori dinamici, ambito, visibilità, tag (anche nuovi),
+  partecipanti, descrizione, note, foto e PDF (ridimensionati/validati).
+- Distinzione tra chi ha svolto e chi ha inserito; registrazioni private o visibili alla famiglia.
+- Modifica, cestino con ripristino, eliminazione definitiva (admin), storico modifiche con differenze.
+- Elenco filtrabile (persona, categoria, attività, tag, ambito, date, testo) con paginazione.
+- Correzione critica: le migrazioni SQLite non cancellano più i dati collegati (test di regressione).
 
-## Fase 4 — Dashboard e statistiche
-Dashboard personale, familiare e comparativa; API JSON per i grafici; Chart.js (linee, barre, torta,
-area, radar), heatmap calendario; filtri per utente, categoria, attività, periodo, ambito.
+## Fase 4 — Dashboard e statistiche ✅
+- Dashboard personale, familiare e comparativa (persone, mesi/anni, categorie, attività, io vs famiglia).
+- Grafici a linee, area, barre, torta (ciambella), radar, heatmap annuale, barre di progresso obiettivi;
+  ogni grafico con vista tabellare.
+- Filtri: periodo (giorno, settimana, mese, trimestre, semestre, anno, personalizzato) con navigazione
+  avanti/indietro, persona, categoria, attività, ambito, misura omogenea.
+- KPI: totale, oggi/settimana/mese, tempo dedicato, giorni attivi, variazione sul periodo precedente.
 
-## Fase 5 — Obiettivi e calendario
-`goals`, `goal_events`, `notifications`. Calendario mese/settimana/giorno con inserimento diretto.
+## Fase 5 — Obiettivi e calendario ✅
+- Obiettivi individuali (privati o visibili alla famiglia) e familiari; misure: registrazioni, quantità,
+  indicatori (somma/media/max/min secondo l'indicatore); una tantum o ricorrenti (settimana/mese/anno).
+- Progresso automatico, notifiche a metà strada / raggiunto / scaduto, storico eventi e risultati per periodo.
+- Calendario mese/settimana/giorno con filtri persona/categoria, inserimento diretto e riepilogo del periodo.
+- Nuova home: registrazione con un tocco, KPI del giorno/settimana, ultime attività, obiettivi, famiglia.
 
-## Fase 6 — Funzionalità avanzate
-Promemoria (`reminders`), notifiche in-app, riepiloghi settimanali/mensili, export CSV/Excel,
-backup automatici, preferenze aggiuntive.
+## Fase 6 — Funzionalità avanzate ✅
+- Notifiche in-app con contatore (campanella, titolo della pagina).
+- Promemoria personali (una volta, giornalieri, settimanali con giorni scelti, mensili) collegabili a un'attività.
+- Riepiloghi settimanali e mensili (pagina + notifica automatica, disattivabili nelle preferenze).
+- Esportazione Excel (con foglio di riepilogo) e CSV (formato italiano), con filtri.
+- Backup automatici giornalieri (database + file) con rotazione; comandi `lt backup` / `lt restore`.
+- Preferenze: tema, riepiloghi, notifiche obiettivi.
 
-## Fase 7 — Installazione su Raspberry Pi
-Script di installazione, Gunicorn + systemd, Nginx, Tailscale (HTTPS con `tailscale serve`),
-backup pianificati con timer systemd, guida all'aggiornamento.
+## Fase 7 — Installazione su Raspberry Pi ✅
+- `deploy/install.sh`: un comando installa o aggiorna (pacchetti, utente di servizio, ambiente Python,
+  `.env` con chiave casuale, backup preventivo, migrazioni, Gunicorn + systemd, timer delle attività
+  periodiche, sito Nginx dedicato su porta configurabile senza toccare gli altri siti, verifica finale).
+- Guida: `docs/INSTALLAZIONE_RASPBERRY.md` (anche da iPhone via Tailscale, HTTPS con `tailscale serve`).
+- Verificato in un ambiente Linux con Nginx reale: installazione, aggiornamento, registrazione, upload,
+  +1, dashboard e attività periodiche attraverso Nginx.
+
+## Possibili estensioni (da concordare)
+- Notifiche push sul telefono (Web Push).
+- Integrazione con Strava/Coros per importare automaticamente le uscite sportive.
+- Modelli di catalogo suggeriti da importare con un clic.

@@ -7,7 +7,7 @@ from PIL import Image
 from app.extensions import db
 from app.models import ROLE_MEMBER, ActivityEntry, Attachment, EntryRevision, Tag
 from app.services import PermissionDenied, catalog_service, entry_service, family_service
-from app.services.entry_service import EntryData, EntryValidationError
+from app.services.entry_service import EntryData
 from app.utils.timezone import utcnow
 
 
@@ -139,7 +139,7 @@ def test_isolation_between_families(client, setup, make_user, login):
     assert client.get(f"/registrazioni/{entry.id}").status_code == 404
     assert client.post(f"/registrazioni/rapida/{setup['bike'].id}").status_code in (302, 400)
     assert db.session.scalar(db.select(db.func.count()).select_from(ActivityEntry)) == 1
-    resp = client.post(f"/registrazioni/nuova?attivita={setup['bike'].id}", data=_form(setup))
+    client.post(f"/registrazioni/nuova?attivita={setup['bike'].id}", data=_form(setup))
     assert db.session.scalar(db.select(db.func.count()).select_from(ActivityEntry)) == 1
 
 

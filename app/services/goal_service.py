@@ -15,7 +15,6 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
 
-from flask import url_for
 from sqlalchemy import or_
 
 from app.extensions import db
@@ -187,12 +186,6 @@ def evaluate(goal: Goal, today: date | None = None) -> Progress:
                        body=f"Risultato: {progress.value_label} su {progress.target_label}", link=link,
                        dedupe_key=f"goal{goal.id}-expired")
     return progress
-
-
-def _has_request() -> bool:
-    from flask import has_request_context
-
-    return has_request_context()
 
 
 def _add_event(goal: Goal, event: str, period_key: str, value) -> bool:

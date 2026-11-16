@@ -28,7 +28,6 @@ from app.services.period import (
     bucket_key,
     bucket_labels,
     buckets_for,
-    local_date_range_utc,
 )
 from app.utils.formatting import fmt_hours, fmt_number
 from app.utils.timezone import local_today, to_local

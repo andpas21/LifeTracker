@@ -118,7 +118,7 @@ def test_catalog_isolation(client, sport, make_user, login):
     assert client.post(f"/catalogo/attivita/{bike.id}/indicatori", data={
         "name": "X", "data_type": "decimal", "kind": "other", "aggregation": "sum"}).status_code == 404
     # una categoria di un'altra famiglia non può essere usata come genitore
-    resp = client.post("/catalogo/categorie/nuova", data={"name": "Furba", "parent_id": cat.id, "icon": "tag",
+    client.post("/catalogo/categorie/nuova", data={"name": "Furba", "parent_id": cat.id, "icon": "tag",
                                                          "color": "#000000"})
     assert db.session.scalar(db.select(Category).filter_by(name="Furba")) is None
     assert "Ciclismo" not in client.get("/catalogo/").get_data(as_text=True)

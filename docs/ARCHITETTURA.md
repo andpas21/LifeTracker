@@ -1,7 +1,7 @@
 # LifeTracker — Architettura del sistema
 
 > Documento tecnico di riferimento. Viene aggiornato al termine di ogni fase.
-> Stato attuale: **Fase 1 completata** (fondamenta, utenti, famiglie). Vedi `docs/ROADMAP.md`.
+> Stato attuale: **fasi 1-7 completate**. Vedi `docs/ROADMAP.md`.
 
 ---
 
@@ -315,12 +315,12 @@ LifeTracker/
 │   │   ├── main/              # home, offline page, service worker, manifest
 │   │   ├── family/            # famiglia, membri, inviti, dipendenti
 │   │   ├── profile/           # profilo, foto, password, preferenze
-│   │   ├── catalog/           # (Fase 2) categorie, attività, indicatori, tag
-│   │   ├── entries/           # (Fase 3) registrazioni rapide/complete, storico
-│   │   ├── dashboard/         # (Fase 4) dashboard + API JSON per i grafici
-│   │   ├── calendar/          # (Fase 5)
-│   │   ├── goals/             # (Fase 5)
-│   │   └── tools/             # (Fase 6) export, backup, promemoria, notifiche
+│   │   ├── catalog/           # categorie, attività, indicatori, tag
+│   │   ├── entries/           # registrazioni rapide/complete, storico, allegati, cestino
+│   │   ├── dashboard/         # dashboard personale, familiare, confronti
+│   │   ├── calendar/          # vista mese/settimana/giorno
+│   │   ├── goals/             # obiettivi
+│   │   └── tools/             # notifiche, promemoria, riepiloghi, esportazione
 │   ├── templates/             # base.html, partials/, una cartella per blueprint
 │   └── static/
 │       ├── css/app.css
@@ -329,7 +329,7 @@ LifeTracker/
 │       └── vendor/            # Bootstrap, Bootstrap Icons, Chart.js (locali, niente CDN)
 ├── migrations/                # Alembic (Flask-Migrate)
 ├── tests/                     # pytest
-├── deploy/                    # (Fase 7) nginx, systemd, script installazione/backup
+├── deploy/install.sh          # installazione/aggiornamento su Raspberry Pi (systemd + nginx)
 ├── docs/                      # questa documentazione
 ├── instance/                  # (non versionata) database, upload, backup, log
 ├── wsgi.py                    # entry point per Gunicorn
@@ -422,3 +422,30 @@ Le voci compaiono nel menu **solo quando la relativa fase è implementata** (nes
   `local_today()` e il filtro Jinja `|localdt`.
 * I confini di giorno/settimana/mese per statistiche e calendario si calcolano nel fuso locale e poi
   si convertono in UTC per la query (gestisce correttamente il cambio ora legale).
+
+---
+
+## 9. Note di implementazione (fasi 2-7)
+
+- **Grafici**: il server prepara una specifica neutra (`stats_service.chart`) inserita nella pagina come JSON
+  (`<script type="application/json">`, compatibile con la CSP); `static/js/charts.js` la converte in Chart.js.
+  Ogni grafico ha la vista tabellare dei dati (accessibilità). Le categorie e le persone usano il colore
+  scelto dall'utente; le serie senza un colore proprio (es. periodo attuale/precedente) usano una palette
+  verificata per il daltonismo.
+- **Misure omogenee**: `count` (registrazioni), `quantity` (solo con una singola attività),
+  `g:<significato>|<unità>|<aggregazione>` (indicatori compatibili di attività diverse),
+  `m:<id>` (indicatore di un'attività). Le medie non vengono mai sommate.
+- **Visibilità**: `entry_service.visibility_clause` è l'unico punto che decide cosa vede un utente; tutte le
+  letture (elenco, calendario, dashboard, esportazione, riepiloghi) passano da lì.
+- **Storico modifiche**: ogni creazione/modifica/eliminazione/ripristino salva una fotografia completa
+  (`entry_revisions`); la pagina mostra le differenze campo per campo.
+- **Obiettivi**: il progresso è sempre calcolato dai dati (nessun contatore da sincronizzare); traguardi
+  intermedi, completamenti e scadenze sono eventi idempotenti (`goal_events` con vincolo di unicità) che
+  generano notifiche senza doppioni.
+- **Attività periodiche**: `flask lt run-scheduled`, eseguito da un timer systemd ogni 5 minuti: promemoria,
+  scadenze degli obiettivi, riepiloghi settimanali/mensili, backup giornaliero (rotazione su 14 copie).
+- **Migrazioni SQLite**: `migrations/env.py` disattiva le chiavi esterne durante le migrazioni "batch"
+  (che ricreano le tabelle) e verifica l'integrità alla fine; un test di regressione controlla che i dati
+  esistenti sopravvivano agli aggiornamenti.
+- **Notifiche**: in-app (campanella con contatore). Le notifiche push sul telefono richiederebbero Web Push
+  (chiavi VAPID e HTTPS): possibile estensione futura.

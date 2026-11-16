@@ -157,7 +157,6 @@ cat > /etc/nginx/sites-available/lifetracker <<NGINX
 # LifeTracker — generato da deploy/install.sh
 server {
     listen $LT_PORT;
-    listen [::]:$LT_PORT;
     server_name _;
 
     client_max_body_size 12m;
