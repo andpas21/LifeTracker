@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field, page_header %}
+{% block title %}{{ 'Modifica ' ~ activity.name if activity else 'Nuova attività' }}{% endblock %}
+{% block content %}
+{% call page_header(self.title()) %}{% endcall %}
+<div class="card lt-card lt-narrow">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ field(form.name) }}
+      {{ field(form.category_id) }}
+      {{ field(form.description) }}
+      {% include "partials/_icon_select.html" %}
+      {{ field(form.custom_color) }}
+      {{ field(form.color) }}
+      <div class="row">
+        {{ field(form.count_label, class_='col-sm-6') }}
+        {{ field(form.default_quantity, class_='col-sm-6') }}
+      </div>
+      <div class="row">
+        {{ field(form.default_scope, class_='col-sm-6') }}
+        {{ field(form.sort_order, class_='col-sm-6') }}
+      </div>
+      {{ field(form.is_quick) }}
+      <button class="btn btn-primary" type="submit">Salva</button>
+      <a class="btn btn-link" href="{{ url_for('catalog.activity_detail', activity_id=activity.id) if activity else url_for('catalog.index') }}">Annulla</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

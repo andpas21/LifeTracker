@@ -1,0 +1,9 @@
+{# Selettore icona con anteprima (aggiornata da app.js) #}
+<div class="mb-3">
+  {{ form.icon.label(class_='form-label') }}
+  <div class="input-group">
+    <span class="input-group-text" data-icon-preview="{{ form.icon.id }}"><i class="bi bi-{{ form.icon.data or 'dash' }}"></i></span>
+    {{ form.icon(class_='form-select' ~ (' is-invalid' if form.icon.errors else '')) }}
+  </div>
+  {% for e in form.icon.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+</div>

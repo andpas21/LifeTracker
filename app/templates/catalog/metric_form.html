@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header %}
+{% block title %}Modifica indicatore{% endblock %}
+{% block content %}
+{% call page_header("Modifica indicatore", metric.activity.name) %}{% endcall %}
+<div class="card lt-card lt-narrow">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% include "catalog/metric_fields.html" %}
+      <button class="btn btn-primary" type="submit">Salva</button>
+      <a class="btn btn-link" href="{{ url_for('catalog.activity_detail', activity_id=metric.activity_id) }}">Annulla</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

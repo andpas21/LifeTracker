@@ -58,11 +58,12 @@ def create_app(config_name: str | None = None) -> Flask:
 
 def _register_blueprints(app: Flask) -> None:
     from app.blueprints.auth import bp as auth_bp
+    from app.blueprints.catalog import bp as catalog_bp
     from app.blueprints.family import bp as family_bp
     from app.blueprints.main import bp as main_bp
     from app.blueprints.profile import bp as profile_bp
 
-    for bp in (main_bp, auth_bp, family_bp, profile_bp):
+    for bp in (main_bp, auth_bp, family_bp, profile_bp, catalog_bp):
         app.register_blueprint(bp)
 
 
@@ -94,6 +95,12 @@ def _register_template_helpers(app: Flask) -> None:
     @app.template_filter("localdt")
     def localdt(value, fmt="%d/%m/%Y %H:%M"):
         return format_local(value, fmt)
+
+    from app.utils.formatting import fmt_duration, fmt_hours, fmt_number
+
+    app.add_template_filter(fmt_number, "num")
+    app.add_template_filter(fmt_duration, "duration")
+    app.add_template_filter(fmt_hours, "hours")
 
     @app.template_filter("datefmt")
     def datefmt(value, fmt="%d/%m/%Y"):

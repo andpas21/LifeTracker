@@ -48,6 +48,15 @@
     });
   });
 
+  // Anteprima dell'icona nei selettori (data-icon-preview="<id del select>").
+  document.querySelectorAll("[data-icon-preview]").forEach(function (preview) {
+    var select = document.getElementById(preview.getAttribute("data-icon-preview"));
+    if (!select) return;
+    select.addEventListener("change", function () {
+      preview.innerHTML = '<i class="bi bi-' + (select.value || "dash") + '"></i>';
+    });
+  });
+
   // Gli avvisi di successo/informazione si chiudono da soli.
   document.querySelectorAll(".lt-flashes .alert-success, .lt-flashes .alert-info").forEach(function (alert) {
     setTimeout(function () {

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header, icon_badge, post_button %}
+{% block title %}{{ activity.name }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+  {{ icon_badge(activity.display_icon, activity.display_color, 56) }}
+  <div class="flex-fill min-w-0">
+    <h1 class="h3 mb-0">{{ activity.name }} {% if activity.is_archived %}<span class="badge text-bg-secondary fs-6">archiviata</span>{% endif %}</h1>
+    <div class="text-body-secondary"><a href="{{ url_for('catalog.index') }}">Catalogo</a> › {{ activity.category.full_name }}</div>
+  </div>
+  {% if can_edit %}
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-primary" href="{{ url_for('catalog.edit_activity', activity_id=activity.id) }}"><i class="bi bi-pencil"></i> Modifica</a>
+    {{ post_button(url_for('catalog.archive_activity', activity_id=activity.id), 'Ripristina' if activity.is_archived else 'Archivia', icon='archive') }}
+    {% if not entry_count %}
+      {{ post_button(url_for('catalog.delete_activity', activity_id=activity.id), 'Elimina', icon='trash', btn_class='btn-outline-danger', confirm='Eliminare l\'attività ' ~ activity.name ~ '?') }}
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-lg-4">
+    <div class="card lt-card">
+      <div class="card-header fw-semibold">Impostazioni</div>
+      <ul class="list-group list-group-flush small">
+        {% if activity.description %}<li class="list-group-item">{{ activity.description }}</li>{% endif %}
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Contatore</span><strong>+{{ activity.default_quantity|num }} {{ activity.count_label }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Ambito predefinito</span><strong>{{ 'Familiare' if activity.default_scope == 'family' else 'Personale' }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Registrazione rapida</span><strong>{{ 'Sì' if activity.is_quick else 'No' }}</strong></li>
+        <li class="list-group-item d-flex"><span class="text-body-secondary flex-fill">Registrazioni</span><strong>{{ entry_count }}</strong></li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-12 col-lg-8">
+    <div class="card lt-card">
+      <div class="card-header fw-semibold">Indicatori</div>
+      {% if activity.metrics %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead><tr><th>Nome</th><th>Tipo</th><th>Significato</th><th>Aggregazione</th><th></th></tr></thead>
+          <tbody>
+          {% for m in activity.metrics %}
+            <tr class="{{ 'opacity-50' if m.is_archived }}">
+              <td><strong>{{ m.name }}</strong>{% if m.display_unit %} <span class="text-body-secondary">({{ m.display_unit }})</span>{% endif %}
+                {% if m.is_required %}<span class="badge text-bg-light border">obbligatorio</span>{% endif %}
+                {% if m.is_archived %}<span class="badge text-bg-secondary">archiviato</span>{% endif %}</td>
+              <td class="small">{{ data_type_labels[m.data_type] }}</td>
+              <td class="small">{{ kind_labels[m.kind] }}</td>
+              <td class="small">{{ aggregation_labels[m.aggregation] if m.is_numeric else '—' }}</td>
+              <td class="text-end text-nowrap">
+                {% if can_edit %}
+                  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('catalog.edit_metric', metric_id=m.id) }}" title="Modifica" aria-label="Modifica"><i class="bi bi-pencil"></i></a>
+                  {{ post_button(url_for('catalog.archive_metric', metric_id=m.id), None, icon='archive', btn_class='btn-sm btn-outline-secondary', title=('Ripristina' if m.is_archived else 'Archivia')) }}
+                  {{ post_button(url_for('catalog.delete_metric', metric_id=m.id), None, icon='trash', btn_class='btn-sm btn-outline-danger', confirm='Eliminare l\'indicatore ' ~ m.name ~ '?', title='Elimina') }}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="card-body text-body-secondary small">Nessun indicatore: ogni registrazione conterà solo come "+{{ activity.default_quantity|num }} {{ activity.count_label }}". Aggiungi indicatori come chilometri, durata o pagine.</div>
+      {% endif %}
+    </div>
+
+    {% if can_edit %}
+    <div class="card lt-card mt-3">
+      <div class="card-header fw-semibold"><i class="bi bi-plus-circle"></i> Nuovo indicatore</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('catalog.add_metric', activity_id=activity.id) }}" novalidate>
+          {% with form = metric_form %}{% include "catalog/metric_fields.html" %}{% endwith %}
+          <button class="btn btn-primary" type="submit">Aggiungi indicatore</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

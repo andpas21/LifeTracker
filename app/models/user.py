@@ -30,6 +30,10 @@ class User(UserMixin, TimestampMixin, db.Model):
     failed_login_count: Mapped[int] = mapped_column(db.Integer, default=0, nullable=False)
     locked_until: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
     last_login_at: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+    # Preferenze personali
+    weekly_summary: Mapped[bool] = mapped_column(db.Boolean, default=True, nullable=False)
+    monthly_summary: Mapped[bool] = mapped_column(db.Boolean, default=True, nullable=False)
+    goal_notifications: Mapped[bool] = mapped_column(db.Boolean, default=True, nullable=False)
 
     profile: Mapped["Profile"] = relationship(  # noqa: F821
         back_populates="user", uselist=False, cascade="all, delete-orphan"

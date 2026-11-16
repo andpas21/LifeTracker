@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import page_header, icon_badge, post_button, empty_state %}
+{% block title %}Catalogo{% endblock %}
+{% block content %}
+{% call page_header("Catalogo", "Categorie, attività e indicatori della famiglia.") %}
+  <a class="btn btn-outline-secondary" href="{{ url_for('catalog.tags') }}"><i class="bi bi-tags"></i> Tag</a>
+  {% if can_create %}
+    <a class="btn btn-outline-primary" href="{{ url_for('catalog.new_category') }}"><i class="bi bi-folder-plus"></i> Categoria</a>
+    <a class="btn btn-primary" href="{{ url_for('catalog.new_activity') }}"><i class="bi bi-plus-lg"></i> Attività</a>
+  {% endif %}
+{% endcall %}
+
+<div class="d-flex justify-content-end mb-3">
+  {% if show_archived %}
+    <a class="small" href="{{ url_for('catalog.index') }}"><i class="bi bi-eye-slash"></i> Nascondi archiviati</a>
+  {% else %}
+    <a class="small" href="{{ url_for('catalog.index', archiviati=1) }}"><i class="bi bi-archive"></i> Mostra archiviati</a>
+  {% endif %}
+</div>
+
+{% if not categories %}
+  <div class="card lt-card">
+    {% call empty_state('folder2-open', 'Il catalogo è vuoto', 'Crea le categorie (es. Sport, Casa, Formazione) e poi le attività da registrare con il +1.') %}
+      {% if can_create %}<a class="btn btn-primary" href="{{ url_for('catalog.new_category') }}"><i class="bi bi-folder-plus"></i> Crea la prima categoria</a>{% endif %}
+    {% endcall %}
+  </div>
+{% endif %}
+
+{% macro activity_list(cat) %}
+  {% set acts = cat.activities if show_archived else cat.activities|rejectattr('is_archived')|list %}
+  {% if acts %}
+  <div class="lt-activity-grid">
+    {% for a in acts %}
+      <a class="lt-activity-chip {{ 'opacity-50' if a.is_archived }}" href="{{ url_for('catalog.activity_detail', activity_id=a.id) }}">
+        {{ icon_badge(a.display_icon, a.display_color, 32) }}
+        <span class="min-w-0">
+          <span class="d-block fw-semibold text-truncate">{{ a.name }}</span>
+          <span class="d-block small text-body-secondary text-truncate">
+            {{ a.active_metrics|length }} indicatori{% if a.is_archived %} · archiviata{% endif %}
+          </span>
+        </span>
+      </a>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="small text-body-secondary mb-0">Nessuna attività.</p>
+  {% endif %}
+{% endmacro %}
+
+{% macro category_actions(cat) %}
+  <div class="d-flex gap-1 ms-auto flex-shrink-0">
+    {% if can_create and not cat.is_archived %}
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('catalog.new_activity', categoria=cat.id) }}" title="Nuova attività" aria-label="Nuova attività"><i class="bi bi-plus-lg"></i></a>
+    {% endif %}
+    {% if can_edit(cat) %}
+      <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown" aria-label="Altre azioni"><i class="bi bi-three-dots"></i></button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="{{ url_for('catalog.edit_category', category_id=cat.id) }}"><i class="bi bi-pencil me-2"></i>Modifica</a></li>
+          {% if not cat.parent_id and not cat.is_archived %}
+            <li><a class="dropdown-item" href="{{ url_for('catalog.new_category', superiore=cat.id) }}"><i class="bi bi-diagram-2 me-2"></i>Nuova sottocategoria</a></li>
+          {% endif %}
+          <li>
+            <form method="post" action="{{ url_for('catalog.archive_category', category_id=cat.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="dropdown-item" type="submit"><i class="bi bi-archive me-2"></i>{{ 'Ripristina' if cat.is_archived else 'Archivia' }}</button>
+            </form>
+          </li>
+          <li>
+            <form method="post" action="{{ url_for('catalog.delete_category', category_id=cat.id) }}" data-confirm="Eliminare la categoria {{ cat.name }}?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="dropdown-item text-danger" type="submit"><i class="bi bi-trash me-2"></i>Elimina</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+<div class="row g-3">
+{% for cat in categories %}
+  <div class="col-12 col-xl-6">
+    <div class="card lt-card h-100 {{ 'opacity-75' if cat.is_archived }}">
+      <div class="card-header d-flex align-items-center gap-2">
+        {{ icon_badge(cat.icon, cat.color, 36) }}
+        <div class="min-w-0">
+          <div class="fw-semibold text-truncate">{{ cat.name }} {% if cat.is_archived %}<span class="badge text-bg-secondary">archiviata</span>{% endif %}</div>
+          {% if cat.description %}<div class="small text-body-secondary text-truncate">{{ cat.description }}</div>{% endif %}
+        </div>
+        {{ category_actions(cat) }}
+      </div>
+      <div class="card-body">
+        {{ activity_list(cat) }}
+        {% for sub in cat.children if show_archived or not sub.is_archived %}
+          <div class="lt-subcategory mt-3 {{ 'opacity-75' if sub.is_archived }}">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              {{ icon_badge(sub.icon, sub.color, 26) }}
+              <span class="fw-semibold small">{{ sub.name }}</span>
+              {% if sub.is_archived %}<span class="badge text-bg-secondary">archiviata</span>{% endif %}
+              {{ category_actions(sub) }}
+            </div>
+            {{ activity_list(sub) }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

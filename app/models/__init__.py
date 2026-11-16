@@ -3,6 +3,29 @@
 Importarli qui garantisce che Alembic (flask db migrate) li veda tutti.
 """
 from app.models.audit import AuditLog
+from app.models.catalog import (
+    AGGREGATION_LABELS,
+    DATA_TYPE_LABELS,
+    KIND_LABELS,
+    SCOPE_FAMILY,
+    SCOPE_LABELS,
+    SCOPE_PERSONAL,
+    Activity,
+    Category,
+    MetricDefinition,
+    Tag,
+)
+from app.models.entry import (
+    VISIBILITY_FAMILY,
+    VISIBILITY_LABELS,
+    VISIBILITY_PRIVATE,
+    ActivityEntry,
+    Attachment,
+    EntryRevision,
+    MetricValue,
+    entry_participants,
+    entry_tags,
+)
 from app.models.family import (
     ROLE_ADMIN,
     ROLE_DEPENDENT,
@@ -14,9 +37,44 @@ from app.models.family import (
     FamilyMember,
     Profile,
 )
+from app.models.goal import (
+    GOAL_RECURRENCE_LABELS,
+    GOAL_STATUS_LABELS,
+    GOAL_TARGET_LABELS,
+    Goal,
+    GoalEvent,
+    Notification,
+    Reminder,
+)
 from app.models.user import THEMES, User
 
 __all__ = [
+    "ActivityEntry",
+    "Attachment",
+    "EntryRevision",
+    "MetricValue",
+    "entry_participants",
+    "entry_tags",
+    "VISIBILITY_FAMILY",
+    "VISIBILITY_PRIVATE",
+    "VISIBILITY_LABELS",
+    "Goal",
+    "GoalEvent",
+    "Notification",
+    "Reminder",
+    "GOAL_RECURRENCE_LABELS",
+    "GOAL_STATUS_LABELS",
+    "GOAL_TARGET_LABELS",
+    "Activity",
+    "Category",
+    "MetricDefinition",
+    "Tag",
+    "SCOPE_PERSONAL",
+    "SCOPE_FAMILY",
+    "SCOPE_LABELS",
+    "DATA_TYPE_LABELS",
+    "KIND_LABELS",
+    "AGGREGATION_LABELS",
     "AuditLog",
     "Family",
     "FamilyInvitation",

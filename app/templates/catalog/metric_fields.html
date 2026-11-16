@@ -1,0 +1,18 @@
+{# Campi del form indicatore, condivisi da "aggiungi" e "modifica" #}
+{% from "partials/_macros.html" import field %}
+{{ form.hidden_tag() }}
+<div class="row">
+  {{ field(form.name, class_='col-md-6') }}
+  {{ field(form.data_type, class_='col-md-6') }}
+</div>
+<div class="row">
+  {{ field(form.unit, class_='col-md-4', help='Ignorata per la durata (sempre ore:minuti).') }}
+  {{ field(form.kind, class_='col-md-4') }}
+  {{ field(form.aggregation, class_='col-md-4') }}
+</div>
+<div class="row">
+  {{ field(form.min_value, class_='col-6 col-md-4') }}
+  {{ field(form.max_value, class_='col-6 col-md-4') }}
+  {{ field(form.sort_order, class_='col-md-4') }}
+</div>
+{{ field(form.is_required) }}
